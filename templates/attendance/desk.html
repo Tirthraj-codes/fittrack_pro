@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Front Desk | FitTrack Pro{% endblock %}
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Front Desk</h3>
+      <span class="text-muted">{{ today|date:"l, d F Y" }}</span>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'attendance_history' %}" class="btn btn-fit-outline"><i class="bi bi-clock-history"></i> History</a>
+      {% if user.is_admin_role %}
+        <a href="{% url 'attendance_report' %}" class="btn btn-fit"><i class="bi bi-bar-chart-line-fill"></i> Monthly report</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-6"><div class="stat-card grad-teal"><div class="stat-number">{{ visits_today }}</div><div class="stat-label">Visits today</div></div></div>
+    <div class="col-6"><div class="stat-card grad-orange"><div class="stat-number">{{ inside_now }}</div><div class="stat-label">Inside now</div></div></div>
+  </div>
+
+  <div class="row g-4">
+
+    <div class="col-lg-5">
+      <!-- QR / barcode scan -->
+      <div class="fit-card no-lift mb-4">
+        <h5 class="fw-bold"><i class="bi bi-qr-code-scan"></i> Scan member QR</h5>
+        <p class="text-muted small">
+          Scan with a USB scanner (the box is already selected) or use the camera.
+          The first scan checks in, the next scan checks out.
+        </p>
+        <form method="post" action="{% url 'attendance_scan' %}" id="scan-form">
+          {% csrf_token %}
+          <input type="text" name="code" id="code-input" class="form-control mb-2"
+                 placeholder="Scan or paste member code" autocomplete="off" autofocus>
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-fit">Submit code</button>
+            <button type="button" id="start-camera" class="btn btn-fit-outline"><i class="bi bi-camera-video-fill"></i> Use camera</button>
+          </div>
+        </form>
+        <div id="qr-reader" class="d-none"></div>
+      </div>
+
+      <!-- Manual -->
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold"><i class="bi bi-hand-index-thumb-fill"></i> Manual check-in / out</h5>
+        <form method="post" action="{% url 'attendance_manual' %}">
+          {% csrf_token %}
+          {% include 'includes/form_field.html' with field=form.member %}
+          <div class="d-flex gap-2">
+            <button type="submit" name="action" value="in" class="btn btn-fit">Check in</button>
+            <button type="submit" name="action" value="out" class="btn btn-fit-outline">Check out</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold mb-3">Today's visits</h5>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead><tr><th>Member</th><th>In</th><th>Out</th><th>Time</th><th>Via</th><th></th></tr></thead>
+            <tbody>
+              {% for r in todays %}
+              <tr>
+                <td class="fw-semibold">{{ r.member.display_name }}</td>
+                <td>{{ r.check_in|time:"h:i A" }}</td>
+                <td>
+                  {% if r.check_out %}{{ r.check_out|time:"h:i A" }}
+                  {% else %}<span class="badge-soft badge-soft-success">In gym</span>{% endif %}
+                </td>
+                <td>{{ r.duration_label }}</td>
+                <td>
+                  <span class="badge-soft {% if r.method == 'qr' %}badge-soft-purple{% else %}badge-soft-gray{% endif %}">{{ r.get_method_display }}</span>
+                </td>
+                <td class="text-end">
+                  {% if not r.check_out %}
+                  <form method="post" action="{% url 'attendance_checkout' r.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Check out</button>
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center text-muted py-4">No visits yet today.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script>
+<script>
+  (function () {
+    var startBtn = document.getElementById('start-camera');
+    startBtn.addEventListener('click', function () {
+      if (!window.Html5Qrcode) {
+        alert('The camera scanner could not load. Use the code box instead.');
+        return;
+      }
+      document.getElementById('qr-reader').classList.remove('d-none');
+      var scanner = new Html5Qrcode('qr-reader');
+      scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: 220 },
+        function (text) {
+          scanner.stop().then(function () {
+            document.getElementById('code-input').value = text;
+            document.getElementById('scan-form').submit();
+          });
+        },
+        function () { /* ignore frames without a QR code */ }
+      ).catch(function (err) {
+        alert('Could not start the camera: ' + err);
+      });
+    });
+  })();
+</script>
+{% endblock %}

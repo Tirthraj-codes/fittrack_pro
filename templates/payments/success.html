@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Payment successful | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 640px;">
+  <div class="fit-card no-lift text-center">
+    <div class="success-circle"><i class="bi bi-check-lg"></i></div>
+    <h3 class="fw-bold">Payment successful!</h3>
+    <p class="text-muted">Thank you, {{ payment.member.display_name }}. Your payment has been received.</p>
+
+    <div class="receipt-box text-start">
+      <div class="receipt-row"><span class="text-muted">Receipt no.</span><b>{{ payment.receipt_no }}</b></div>
+      <div class="receipt-row"><span class="text-muted">Transaction ID</span><b>{{ payment.transaction_id }}</b></div>
+      <div class="receipt-row"><span class="text-muted">Item</span><b>{{ payment.description }}</b></div>
+      <div class="receipt-row"><span class="text-muted">Method</span><b>{{ payment.get_method_display }}</b></div>
+      <div class="receipt-row"><span class="text-muted">Paid on</span><b>{{ payment.paid_on|date:"d M Y, h:i A" }}</b></div>
+      <div class="receipt-row fs-5"><span>Amount paid</span><b>₹{{ payment.amount|floatformat:"-2"|intcomma }}</b></div>
+    </div>
+
+    <a href="{% url 'payment_receipt' payment.pk %}" target="_blank" class="btn btn-fit me-2 mb-2"><i class="bi bi-file-earmark-pdf-fill"></i> Download receipt</a>
+    <a href="{% url 'my_payments' %}" class="btn btn-fit-outline mb-2">My payments</a>
+  </div>
+</div>
+{% endblock %}

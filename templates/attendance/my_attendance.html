@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}My Attendance | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h3 class="fw-bold mb-4">My Attendance</h3>
+
+  <div class="row g-4 mb-4">
+
+    <div class="col-lg-4">
+      <div class="fit-card no-lift text-center">
+        <h5 class="fw-bold mb-3">My check-in QR</h5>
+        <div class="qr-frame"><img src="{% url 'attendance_qr' user.pk %}" alt="My check-in QR code"></div>
+        <p class="text-muted small mt-3 mb-2">Show this at the front desk to check in and out.</p>
+        <details class="small text-start">
+          <summary class="text-muted">Show code text</summary>
+          <code class="d-block mt-2 p-2 bg-light rounded" style="word-break: break-all; user-select: all;">{{ qr_code }}</code>
+        </details>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      {% if today_record %}
+        {% if today_record.check_out %}
+          <div class="alert alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            Today's visit is done: {{ today_record.check_in|time:"h:i A" }} to {{ today_record.check_out|time:"h:i A" }} ({{ today_record.duration_label }}). Great work! 💪
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            <i class="bi bi-lightning-charge-fill"></i>
+            You're checked in since {{ today_record.check_in|time:"h:i A" }}. Enjoy your workout!
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-secondary">You haven't checked in today.</div>
+      {% endif %}
+
+      <div class="row g-4">
+        <div class="col-4"><div class="stat-card grad-teal"><div class="stat-number">{{ month_days }}</div><div class="stat-label">Days this month</div></div></div>
+        <div class="col-4"><div class="stat-card grad-orange"><div class="stat-number">{{ month_time }}</div><div class="stat-label">Time this month</div></div></div>
+        <div class="col-4"><div class="stat-card grad-purple"><div class="stat-number">{{ total_visits }}</div><div class="stat-label">Total visits</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fit-card no-lift">
+    <h5 class="fw-bold mb-3">Recent visits</h5>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Time</th></tr></thead>
+        <tbody>
+          {% for r in recent %}
+          <tr>
+            <td>{{ r.date|date:"D, d M Y" }}</td>
+            <td>{{ r.check_in|time:"h:i A" }}</td>
+            <td>
+              {% if r.check_out %}{{ r.check_out|time:"h:i A" }}
+              {% elif r.date == today %}<span class="badge-soft badge-soft-success">In gym</span>
+              {% else %}<span class="badge-soft badge-soft-gray">Not recorded</span>{% endif %}
+            </td>
+            <td>{{ r.duration_label }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center text-muted py-4">No visits yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 820px;">
+  <div class="fit-card no-lift">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="icon-bubble grad-purple mb-0"><i class="bi bi-graph-up-arrow"></i></div>
+      <div>
+        <h4 class="fw-bold mb-0">{{ title }}</h4>
+        <span class="text-muted small">{{ subtitle }}</span>
+      </div>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="row">
+        {% if form.member %}
+          <div class="col-12">{% include 'includes/form_field.html' with field=form.member %}</div>
+        {% endif %}
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.date %}</div>
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.weight_kg %}</div>
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.height_cm %}</div>
+      </div>
+
+      <div id="bmi-preview" class="alert alert-info py-2 d-none"></div>
+
+      <h6 class="fw-bold mt-2">Body measurements <span class="text-muted fw-normal">(optional)</span></h6>
+      <div class="row">
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.body_fat_percent %}</div>
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.chest_cm %}</div>
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.waist_cm %}</div>
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.hips_cm %}</div>
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.arms_cm %}</div>
+        <div class="col-md-4">{% include 'includes/form_field.html' with field=form.thighs_cm %}</div>
+        <div class="col-12">{% include 'includes/form_field.html' with field=form.notes %}</div>
+      </div>
+
+      <button type="submit" class="btn btn-fit">Save</button>
+      <a href="{{ cancel_url }}" class="btn btn-fit-outline ms-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var w = document.getElementById('id_weight_kg');
+    var h = document.getElementById('id_height_cm');
+    var box = document.getElementById('bmi-preview');
+    function update() {
+      var kg = parseFloat(w.value), cm = parseFloat(h.value);
+      if (!(kg > 0 && cm > 0)) { box.classList.add('d-none'); return; }
+      var bmi = kg / Math.pow(cm / 100, 2);
+      var cat = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+      box.textContent = 'BMI: ' + bmi.toFixed(1) + ' (' + cat + ')';
+      box.classList.remove('d-none');
+    }
+    w.addEventListener('input', update);
+    h.addEventListener('input', update);
+    update();
+  })();
+</script>
+{% endblock %}

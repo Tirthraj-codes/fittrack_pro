@@ -1,0 +1,5 @@
+{% with s=membership.status %}
+<span class="badge-soft {% if s == 'active' %}badge-soft-success{% elif s == 'expiring' %}badge-soft-orange{% elif s == 'expired' %}badge-soft-danger{% elif s == 'upcoming' %}badge-soft-blue{% elif s == 'upgraded' %}badge-soft-purple{% else %}badge-soft-gray{% endif %}">
+  {{ membership.status_label }}
+</span>
+{% endwith %}

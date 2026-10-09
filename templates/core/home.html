@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}FitTrack Pro | Fitness Club Management{% endblock %}
+
+{% block content %}
+
+<!-- ===== Hero ===== -->
+<section class="hero text-center text-lg-start">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill">🔥 All-in-one gym management</span>
+        <h1>Run your gym.<br>Track every rep.</h1>
+        <p class="lead my-4">
+          FitTrack Pro brings memberships, attendance, payments, trainers and member
+          progress into one bright, simple dashboard.
+        </p>
+        <div class="d-flex gap-3 flex-wrap justify-content-center justify-content-lg-start">
+          {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="btn btn-light-pill btn-lg">Go to Dashboard</a>
+          {% else %}
+                <a href="{% url 'register' %}" class="btn btn-light-pill btn-lg">Join Now</a>
+          {% endif %}
+          <a href="#features" class="btn btn-outline-light btn-lg rounded-pill px-4">See features</a>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block text-center">
+        <i class="bi bi-lightning-charge-fill hero-icon"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Features ===== -->
+<section class="container py-5" id="features">
+  <h2 class="section-title text-center mb-5">Everything your club needs, <span>in one place</span></h2>
+  <div class="row g-4">
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-purple"><i class="bi bi-shield-lock-fill"></i></div>
+        <h5 class="fw-bold">Roles &amp; Login</h5>
+        <p class="text-muted mb-0">Separate dashboards for admins, trainers and members.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-orange"><i class="bi bi-card-checklist"></i></div>
+        <h5 class="fw-bold">Memberships</h5>
+        <p class="text-muted mb-0">Plans, renewals, upgrades and automatic expiry alerts.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-teal"><i class="bi bi-qr-code-scan"></i></div>
+        <h5 class="fw-bold">Attendance</h5>
+        <p class="text-muted mb-0">Quick check-in and check-out with QR codes and monthly reports.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-pink"><i class="bi bi-credit-card-2-front-fill"></i></div>
+        <h5 class="fw-bold">Payments</h5>
+        <p class="text-muted mb-0">Paid, pending and overdue tracking with printable receipts.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-blue"><i class="bi bi-calendar-week-fill"></i></div>
+        <h5 class="fw-bold">Trainer Scheduling</h5>
+        <p class="text-muted mb-0">Weekly timetables with clash detection.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-yellow"><i class="bi bi-graph-up-arrow"></i></div>
+        <h5 class="fw-bold">Progress Analytics</h5>
+        <p class="text-muted mb-0">Weight and BMI charts that show real progress.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-purple"><i class="bi bi-stars"></i></div>
+        <h5 class="fw-bold">Smart Suggestions</h5>
+        <p class="text-muted mb-0">Workout and diet tips based on each member's goal.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-orange"><i class="bi bi-bell-fill"></i></div>
+        <h5 class="fw-bold">Reminders</h5>
+        <p class="text-muted mb-0">Email alerts for renewals, dues and upcoming sessions.</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card">
+        <div class="icon-bubble grad-teal"><i class="bi bi-bar-chart-line-fill"></i></div>
+        <h5 class="fw-bold">Admin Reports</h5>
+        <p class="text-muted mb-0">Revenue, growth and attendance trends, exportable to PDF and CSV.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== Roles ===== -->
+<section class="container pb-4">
+  <h2 class="section-title text-center mb-5">Built for <span>three roles</span></h2>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="fit-card text-center">
+        <div class="icon-bubble grad-pink mx-auto"><i class="bi bi-person-gear"></i></div>
+        <h5 class="fw-bold">Admin</h5>
+        <p class="text-muted mb-0">Manages plans, payments, trainers and reports.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="fit-card text-center">
+        <div class="icon-bubble grad-blue mx-auto"><i class="bi bi-person-lines-fill"></i></div>
+        <h5 class="fw-bold">Trainer</h5>
+        <p class="text-muted mb-0">Sees assigned members and updates session logs.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="fit-card text-center">
+        <div class="icon-bubble grad-teal mx-auto"><i class="bi bi-person-heart"></i></div>
+        <h5 class="fw-bold">Member</h5>
+        <p class="text-muted mb-0">Tracks attendance, progress and renewals.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

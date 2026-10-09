@@ -1,0 +1,5 @@
+{% with s=payment.display_status %}
+<span class="badge-soft {% if s == 'paid' %}badge-soft-success{% elif s == 'overdue' %}badge-soft-danger{% elif s == 'pending' %}badge-soft-orange{% else %}badge-soft-gray{% endif %}">
+  {{ payment.display_status_label }}
+</span>
+{% endwith %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Notifications | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 820px;">
+  <h3 class="fw-bold mb-1">Notifications</h3>
+  <p class="text-muted mb-4">Reminders about your membership, payments and sessions.</p>
+
+  {% for n in notifications %}
+  <div class="fit-card no-lift mb-3 d-flex gap-3 align-items-start {% if n.pk in unread_ids %}notif-unread{% endif %}">
+    <div class="icon-bubble {{ n.color }} mb-0 flex-shrink-0"><i class="bi {{ n.icon }}"></i></div>
+    <div class="flex-grow-1">
+      <div class="d-flex flex-wrap justify-content-between gap-2">
+        <h6 class="fw-bold mb-1">{{ n.title }}{% if n.pk in unread_ids %} <span class="badge-soft badge-soft-purple">New</span>{% endif %}</h6>
+        <span class="text-muted small">{{ n.created_at|timesince }} ago</span>
+      </div>
+      <p class="mb-2">{{ n.message }}</p>
+      {% if n.link %}<a href="{{ n.link }}" class="btn btn-fit-outline btn-sm">Open</a>{% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="fit-card no-lift text-center text-muted py-5">
+    <i class="bi bi-bell fs-1"></i>
+    <p class="mb-0 mt-2">You're all caught up. No notifications yet.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

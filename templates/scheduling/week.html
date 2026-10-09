@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Weekly Schedule | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Weekly Schedule</h3>
+      <span class="text-muted">{{ monday|date:"d M" }} to {{ sunday|date:"d M Y" }}</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="?date={{ prev_week|date:'Y-m-d' }}&trainer={{ trainer_id }}" class="btn btn-fit-outline"><i class="bi bi-chevron-left"></i> Prev</a>
+      <a href="?trainer={{ trainer_id }}" class="btn btn-fit-outline">Today</a>
+      <a href="?date={{ next_week|date:'Y-m-d' }}&trainer={{ trainer_id }}" class="btn btn-fit-outline">Next <i class="bi bi-chevron-right"></i></a>
+      {% if user.is_admin_role or user.is_trainer %}
+        <a href="{% url 'session_create' %}" class="btn btn-fit"><i class="bi bi-plus-circle-fill"></i> Add session</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if user.is_admin_role %}
+  <form method="get" class="mb-4 d-flex gap-2 flex-wrap">
+    <input type="hidden" name="date" value="{{ monday|date:'Y-m-d' }}">
+    <select name="trainer" class="form-select" style="max-width: 280px;">
+      <option value="">All trainers</option>
+      {% for t in trainers %}
+        <option value="{{ t.pk }}" {% if trainer_id == t.pk|stringformat:"d" %}selected{% endif %}>{{ t.display_name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-fit">Filter</button>
+  </form>
+  {% endif %}
+
+  <div class="week-grid">
+    {% for day in days %}
+    <div class="day-col {% if day.is_today %}today{% endif %}">
+      <div class="day-head">{{ day.date|date:"D" }} <span class="fw-normal">{{ day.date|date:"d M" }}</span></div>
+      <div class="day-body">
+        {% for s in day.sessions %}
+        <a href="{% url 'session_detail' s.pk %}" class="session-card s-{{ s.status }}">
+          <div class="session-time">{{ s.start_time|time:"h:i A" }} - {{ s.end_time|time:"h:i A" }}</div>
+          <div>{{ s.get_kind_display }}</div>
+          <div class="text-muted">
+            {% if user.is_member %}{{ s.trainer.display_name }}
+            {% elif user.is_trainer %}{{ s.member.display_name }}
+            {% else %}{{ s.member.display_name }} · {{ s.trainer.display_name }}{% endif %}
+          </div>
+        </a>
+        {% empty %}
+        <div class="text-muted small text-center py-2">-</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex flex-wrap gap-3 mt-4 small text-muted">
+    <span><span class="badge-soft badge-soft-purple">Scheduled</span></span>
+    <span><span class="badge-soft badge-soft-success">Completed</span></span>
+    <span><span class="badge-soft badge-soft-orange">No-show</span></span>
+    <span><span class="badge-soft badge-soft-gray">Cancelled</span></span>
+  </div>
+</div>
+{% endblock %}

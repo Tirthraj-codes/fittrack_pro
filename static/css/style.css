@@ -1,0 +1,460 @@
+/* ===== FitTrack Pro theme: vibrant & bright ===== */
+:root {
+  --fit-orange: #FF6B35;
+  --fit-pink: #F72585;
+  --fit-purple: #7B2FF7;
+  --fit-teal: #00C9A7;
+  --fit-blue: #3A86FF;
+  --fit-yellow: #FFC93C;
+  --fit-dark: #2B2D42;
+  --fit-bg: #FFF9F3;
+  --fit-gradient: linear-gradient(135deg, #FF6B35 0%, #F72585 55%, #7B2FF7 100%);
+  --fit-radius: 18px;
+  --fit-shadow: 0 10px 30px rgba(123, 47, 247, 0.12);
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--fit-bg);
+  color: var(--fit-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+
+/* ---------- Navbar ---------- */
+.fit-navbar {
+  background: var(--fit-gradient);
+  box-shadow: 0 4px 20px rgba(247, 37, 133, 0.25);
+}
+.fit-navbar .navbar-brand {
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: .5px;
+}
+.fit-navbar .nav-link {
+  color: rgba(255, 255, 255, .92);
+  font-weight: 500;
+  border-radius: 10px;
+  padding: .5rem .9rem !important;
+}
+.fit-navbar .nav-link:hover,
+.fit-navbar .nav-link.active {
+  background: rgba(255, 255, 255, .22);
+  color: #fff;
+}
+
+/* ---------- Buttons ---------- */
+.btn-fit {
+  background: var(--fit-gradient);
+  color: #fff;
+  border: 0;
+  border-radius: 50px;
+  padding: .6rem 1.6rem;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(247, 37, 133, .35);
+  transition: transform .15s, box-shadow .15s;
+}
+.btn-fit:hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(247, 37, 133, .45);
+}
+.btn-fit-outline {
+  border: 2px solid var(--fit-purple);
+  color: var(--fit-purple);
+  background: transparent;
+  border-radius: 50px;
+  padding: .5rem 1.5rem;
+  font-weight: 600;
+}
+.btn-fit-outline:hover { background: var(--fit-purple); color: #fff; }
+.btn-light-pill {
+  background: #fff;
+  color: var(--fit-pink);
+  border: 0;
+  border-radius: 50px;
+  padding: .6rem 1.8rem;
+  font-weight: 700;
+}
+.btn-light-pill:hover { background: var(--fit-yellow); color: var(--fit-dark); }
+
+/* ---------- Hero (landing page) ---------- */
+.hero {
+  background: var(--fit-gradient);
+  color: #fff;
+  padding: 5rem 0 6rem;
+  border-radius: 0 0 50px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before, .hero::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .12);
+}
+.hero::before { width: 320px; height: 320px; top: -100px; right: -80px; }
+.hero::after  { width: 220px; height: 220px; bottom: -90px; left: -60px; }
+.hero .container { position: relative; z-index: 1; }
+.hero h1 { font-weight: 800; font-size: clamp(2.2rem, 5vw, 3.6rem); }
+.hero-icon {
+  font-size: 11rem;
+  color: var(--fit-yellow);
+  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, .25));
+}
+
+/* ---------- Cards ---------- */
+.fit-card {
+  background: #fff;
+  border: 0;
+  border-radius: var(--fit-radius);
+  box-shadow: var(--fit-shadow);
+  padding: 1.5rem;
+  height: 100%;
+  transition: transform .2s;
+}
+.fit-card:hover { transform: translateY(-5px); }
+
+.icon-bubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+.grad-orange { background: linear-gradient(135deg, #FF6B35, #FF9F1C); }
+.grad-pink   { background: linear-gradient(135deg, #F72585, #FF6FB5); }
+.grad-purple { background: linear-gradient(135deg, #7B2FF7, #A66BFF); }
+.grad-teal   { background: linear-gradient(135deg, #00C9A7, #3DDBB5); }
+.grad-blue   { background: linear-gradient(135deg, #3A86FF, #63B3FF); }
+.grad-yellow { background: linear-gradient(135deg, #FFC93C, #FF9F1C); }
+
+/* Coloured number cards used on dashboards */
+.stat-card {
+  border-radius: var(--fit-radius);
+  color: #fff;
+  padding: 1.4rem;
+  box-shadow: var(--fit-shadow);
+}
+.stat-card .stat-number { font-size: 2rem; font-weight: 800; }
+.stat-card .stat-label { opacity: .92; font-weight: 500; }
+
+.section-title { font-weight: 800; }
+.section-title span {
+  background: var(--fit-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Small pill showing Admin / Trainer / Member */
+.role-pill {
+  background: var(--fit-yellow);
+  color: var(--fit-dark);
+  padding: .2rem .8rem;
+  border-radius: 50px;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+/* ---------- Forms ---------- */
+.form-control, .form-select {
+  border-radius: 12px;
+  border: 2px solid #eee;
+  padding: .65rem 1rem;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--fit-purple);
+  box-shadow: 0 0 0 .2rem rgba(123, 47, 247, .15);
+}
+
+/* ---------- Login / register card ---------- */
+.auth-wrapper {
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  padding: 3rem 0;
+}
+.auth-card {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: var(--fit-shadow);
+  padding: 2.4rem 2.2rem 2.2rem;
+  width: 100%;
+  max-width: 440px;
+  margin: auto;
+}
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 8px;
+  background: var(--fit-gradient);
+}
+
+/* ---------- Tables (used in later steps) ---------- */
+.fit-table thead th {
+  background: var(--fit-purple);
+  color: #fff;
+  border: 0;
+  font-weight: 600;
+}
+
+/* ---------- Footer ---------- */
+.fit-footer {
+  background: var(--fit-dark);
+  color: rgba(255, 255, 255, .8);
+  padding: 1.4rem 0;
+  margin-top: 4rem;
+  font-size: .9rem;
+}
+/* ---------- Avatars ---------- */
+.avatar, .avatar-initials {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto;
+  box-shadow: var(--fit-shadow);
+}
+.avatar { display: block; object-fit: cover; border: 4px solid #fff; }
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--fit-gradient);
+}
+.nav-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+
+/* ---------- Soft status badges (reused for payments later) ---------- */
+.badge-soft {
+  display: inline-block;
+  padding: .35rem .75rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: .75rem;
+}
+.badge-soft-success { background: rgba(0, 201, 167, .15); color: #00977d; }
+.badge-soft-danger  { background: rgba(247, 37, 133, .12); color: #c81868; }
+.badge-soft-purple  { background: rgba(123, 47, 247, .12); color: #6120c9; }
+.badge-soft-blue    { background: rgba(58, 134, 255, .14); color: #1f63d6; }
+.badge-soft-teal    { background: rgba(0, 201, 167, .15); color: #00977d; }
+
+/* Cards that hold forms or tables should not jump on hover */
+.fit-card.no-lift:hover { transform: none; }
+/* ---------- Memberships ---------- */
+.badge-soft-orange { background: rgba(255, 107, 53, .15); color: #d94a12; }
+.badge-soft-gray   { background: #eceef3; color: #5b6076; }
+
+.plan-price { font-size: 2.2rem; font-weight: 800; }
+
+.progress-fit { height: 12px; border-radius: 50px; background: #f0e9ff; }
+.progress-fit .progress-bar { background: var(--fit-gradient); border-radius: 50px; }
+
+/* Filter chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .4rem .9rem;
+  border-radius: 50px;
+  background: #fff;
+  border: 2px solid #eee;
+  color: var(--fit-dark);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: .85rem;
+}
+.chip b { background: var(--fit-bg); border-radius: 50px; padding: 0 .5rem; }
+.chip:hover { border-color: var(--fit-purple); color: var(--fit-purple); }
+.chip-active { background: var(--fit-purple); border-color: var(--fit-purple); color: #fff; }
+.chip-active:hover { color: #fff; }
+.chip-active b { background: rgba(255, 255, 255, .25); }
+/* ---------- Attendance / QR ---------- */
+.qr-frame {
+  display: inline-block;
+  padding: 12px;
+  border-radius: 22px;
+  border: 4px solid transparent;
+  background-image: linear-gradient(#fff, #fff), var(--fit-gradient);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: var(--fit-shadow);
+}
+.qr-frame img { width: 220px; height: 220px; display: block; }
+#qr-reader { max-width: 360px; margin: 1rem auto 0; }
+/* Cards stacked inside a column must not stretch to the full column height */
+.fit-card.no-lift { height: auto; }
+/* ---------- Payments / checkout ---------- */
+.method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+.method-option { position: relative; display: block; margin: 0; }
+.method-option input { position: absolute; opacity: 0; pointer-events: none; }
+.method-option span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  padding: .9rem .5rem;
+  border: 2px solid #eee;
+  border-radius: 14px;
+  background: #fff;
+  font-weight: 600;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.method-option span i { font-size: 1.6rem; color: var(--fit-purple); }
+.method-option input:checked + span { border-color: var(--fit-purple); background: rgba(123, 47, 247, .08); }
+.method-panel { display: none; }
+.method-panel.active { display: block; }
+
+.processing-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(43, 45, 66, .88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.spinner-ring {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  border: 6px solid rgba(255, 255, 255, .25);
+  border-top-color: var(--fit-yellow);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.success-circle {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00C9A7, #3DDBB5);
+  color: #fff;
+  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop .5s ease;
+}
+@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+.receipt-box { background: var(--fit-bg); border-radius: 16px; padding: .8rem 1.2rem; margin: 1.5rem 0; }
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: .45rem 0;
+  border-bottom: 1px dashed #e5ddd0;
+}
+.receipt-row:last-child { border-bottom: 0; }
+/* ---------- Scheduling ---------- */
+.week-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .75rem; }
+@media (max-width: 991.98px) { .week-grid { grid-template-columns: 1fr; } }
+
+.day-col { background: #fff; border-radius: 16px; box-shadow: var(--fit-shadow); overflow: hidden; min-height: 150px; }
+.day-head { background: #f6f1ff; padding: .6rem .8rem; font-weight: 700; font-size: .9rem; }
+.day-col.today .day-head { background: var(--fit-gradient); color: #fff; }
+.day-body { padding: .6rem; display: flex; flex-direction: column; gap: .5rem; }
+
+.session-card {
+  display: block;
+  text-decoration: none;
+  color: var(--fit-dark);
+  background: #fbf9ff;
+  border-left: 5px solid var(--fit-purple);
+  border-radius: 10px;
+  padding: .5rem .6rem;
+  font-size: .82rem;
+  transition: transform .15s;
+}
+.session-card:hover { transform: translateY(-2px); color: var(--fit-dark); }
+.session-card.s-completed { border-left-color: var(--fit-teal); }
+.session-card.s-no_show { border-left-color: var(--fit-orange); }
+.session-card.s-cancelled { border-left-color: #b8bcc9; opacity: .6; text-decoration: line-through; }
+.session-time { font-weight: 700; }
+
+.day-pill {
+  display: inline-block;
+  border: 2px solid var(--fit-purple);
+  color: var(--fit-purple);
+  border-radius: 50px;
+  font-weight: 600;
+  padding: .3rem 1rem;
+  cursor: pointer;
+}
+.btn-check:checked + .day-pill { background: var(--fit-purple); color: #fff; }
+
+/* Navbar dropdown menus */
+.dropdown-menu { border-radius: 14px; padding: .5rem; }
+.dropdown-item { border-radius: 8px; }
+.dropdown-item:active { background: var(--fit-purple); }
+/* ---------- Progress charts ---------- */
+.chart-box { position: relative; height: 300px; }
+/* ---------- Printing ---------- */
+@media print {
+  .fit-navbar, .fit-footer, .no-print { display: none !important; }
+  body { background: #fff; }
+  .fit-card, .stat-card { box-shadow: none; border: 1px solid #ddd; }
+}
+/* ---------- Notifications ---------- */
+.notif-unread { border-left: 5px solid var(--fit-pink); background: #fff8fb; }
+.bell-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(35%, -10%);
+  font-size: .65rem;
+  font-weight: 700;
+  background: var(--fit-yellow);
+  color: var(--fit-dark);
+  border-radius: 50px;
+  padding: .1rem .4rem;
+}
+/* ---------- Navbar: keep every label on one line ---------- */
+.fit-navbar .navbar-brand,
+.fit-navbar .nav-link { white-space: nowrap; }
+.fit-navbar .nav-link { padding: .5rem .75rem !important; font-size: .95rem; }
+.fit-navbar .dropdown-toggle::after { margin-left: .35rem; }
+/* ---------- PWA install helpers ---------- */
+.install-fab { position: fixed; right: 1rem; bottom: 1rem; z-index: 1030; box-shadow: 0 10px 25px rgba(247, 37, 133, .4); }
+.ios-hint {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  background: #fff;
+  border-radius: 16px;
+  padding: .9rem 1rem;
+  box-shadow: var(--fit-shadow);
+}
+@media print { .install-fab, .ios-hint { display: none !important; } }
+/* ---------- Poppins, hosted inside the project so it works without internet ---------- */
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 400; font-display: swap; src: url('../vendor/poppins/poppins-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 500; font-display: swap; src: url('../vendor/poppins/poppins-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url('../vendor/poppins/poppins-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 700; font-display: swap; src: url('../vendor/poppins/poppins-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 800; font-display: swap; src: url('../vendor/poppins/poppins-latin-800-normal.woff2') format('woff2'); }

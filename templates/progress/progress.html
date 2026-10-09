@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Front Desk | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{% if is_self %}My Progress{% else %}{{ target.display_name }}'s Progress{% endif %}</h3>
+      <span class="text-muted">Weight, BMI and body measurements over time.</span>
+    </div>
+    <a href="{{ plan_url }}" class="btn btn-fit-outline"><i class="bi bi-lightning-charge-fill"></i> Workout &amp; diet plan</a>
+    <div class="d-flex flex-wrap gap-2">
+      {% if not is_self %}
+        <a href="{% url 'progress_overview' %}" class="btn btn-fit-outline"><i class="bi bi-arrow-left"></i> All members</a>
+      {% endif %}
+      <a href="{{ add_url }}" class="btn btn-fit"><i class="bi bi-plus-circle-fill"></i> Add entry</a>
+
+    </div>
+  </div>
+
+  {% if latest %}
+
+  <!-- Numbers -->
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-purple">
+        <div class="stat-number">{{ latest.weight_kg }} kg</div>
+        <div class="stat-label">Current weight{% if change_last is not None %} ({{ change_last|stringformat:"+.1f" }} since last){% endif %}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-teal">
+        <div class="stat-number">{{ latest.bmi }}</div>
+        <div class="stat-label">BMI · {{ latest.bmi_category }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-orange">
+        <div class="stat-number">{% if change_total is not None %}{{ change_total|stringformat:"+.1f" }} kg{% else %}-{% endif %}</div>
+        <div class="stat-label">Total change since first entry</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-pink">
+        <div class="stat-number">{{ latest.date|date:"d M" }}</div>
+        <div class="stat-label">Last logged · {{ entries|length }} entr{{ entries|length|pluralize:"y,ies" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goal -->
+  <div class="fit-card no-lift mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h5 class="fw-bold mb-0"><i class="bi bi-bullseye"></i> Goal</h5>
+      <a href="{{ goal_url }}" class="btn btn-fit-outline btn-sm">{% if goal %}Change goal{% else %}Set a goal{% endif %}</a>
+    </div>
+
+    {% if goal %}
+      <div class="mb-3">
+        <span class="badge-soft badge-soft-purple">{{ goal.get_goal_type_display }}</span>
+        <span class="text-muted small ms-2">
+          Started at {{ goal.start_weight_kg }} kg{% if goal.target_weight_kg %}, target {{ goal.target_weight_kg }} kg{% endif %}{% if goal.target_date %} by {{ goal.target_date|date:"d M Y" }}{% endif %}
+        </span>
+      </div>
+      {% if goal_progress %}
+        {% if goal_progress.is_maintenance %}
+          <span class="badge-soft {% if goal_progress.on_track %}badge-soft-success{% else %}badge-soft-orange{% endif %}">{{ goal_progress.label }}</span>
+          <span class="text-muted small ms-2">{{ goal_progress.gap }} kg from the starting weight (within 2 kg counts as on track)</span>
+        {% else %}
+          <div class="progress progress-fit mb-2"><div class="progress-bar" style="width: {{ goal_progress.percent }}%"></div></div>
+          <div class="d-flex justify-content-between small text-muted">
+            <span>{{ goal_progress.percent }}% of the way</span>
+            <span><b>{{ goal_progress.label }}</b></span>
+          </div>
+        {% endif %}
+      {% endif %}
+    {% else %}
+      <p class="text-muted mb-0">No goal yet. Set one to see your progress toward it.</p>
+    {% endif %}
+  </div>
+
+  <!-- Charts -->
+  {% if chart.labels|length < 2 %}
+    <div class="alert alert-info"><i class="bi bi-info-circle-fill"></i> Add at least two entries to see trends on the charts.</div>
+  {% endif %}
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold mb-3">Weight</h5>
+        <div class="chart-box"><canvas id="weightChart"></canvas></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold mb-3">BMI</h5>
+        <div class="chart-box"><canvas id="bmiChart"></canvas></div>
+        <p class="small text-muted mt-2 mb-0">BMI is a general guide and does not diagnose health.</p>
+      </div>
+    </div>
+    {% if has_measurements %}
+    <div class="col-12">
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold mb-3">Body measurements</h5>
+        <div class="chart-box"><canvas id="bodyChart"></canvas></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- History -->
+  <div class="fit-card no-lift mb-4">
+    <h5 class="fw-bold mb-3">History</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr><th>Date</th><th>Weight</th><th>BMI</th><th>Body fat</th><th>Chest</th><th>Waist</th><th>Hips</th><th>Arms</th><th>Thighs</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for e in entries %}
+          <tr>
+            <td>{{ e.date|date:"d M Y" }}{% if e.notes %}<div class="text-muted small">{{ e.notes }}</div>{% endif %}</td>
+            <td class="fw-semibold">{{ e.weight_kg }} kg</td>
+            <td><span class="badge-soft {{ e.bmi_badge }}">{{ e.bmi }} · {{ e.bmi_category }}</span></td>
+            <td>{% if e.body_fat_percent is not None %}{{ e.body_fat_percent }}%{% else %}-{% endif %}</td>
+            <td>{{ e.chest_cm|default_if_none:"-" }}</td>
+            <td>{{ e.waist_cm|default_if_none:"-" }}</td>
+            <td>{{ e.hips_cm|default_if_none:"-" }}</td>
+            <td>{{ e.arms_cm|default_if_none:"-" }}</td>
+            <td>{{ e.thighs_cm|default_if_none:"-" }}</td>
+            <td class="text-end text-nowrap">
+              <a href="{% url 'entry_edit' e.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Edit</a>
+              <form method="post" action="{% url 'entry_delete' e.pk %}" class="d-inline"
+                    onsubmit="return confirm('Delete the entry from {{ e.date|date:"d M Y" }}?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if past_goals %}
+  <div class="fit-card no-lift">
+    <h5 class="fw-bold mb-3">Earlier goals</h5>
+    {% for g in past_goals %}
+      <div class="receipt-row">
+        <span>{{ g.get_goal_type_display }}: {{ g.start_weight_kg }} kg{% if g.target_weight_kg %} to {{ g.target_weight_kg }} kg{% endif %}</span>
+        <span class="text-muted small">set {{ g.created_at|date:"d M Y" }}</span>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="fit-card no-lift text-center py-5">
+    <div class="icon-bubble grad-purple mx-auto"><i class="bi bi-graph-up-arrow"></i></div>
+    <h5 class="fw-bold">No measurements yet</h5>
+    <p class="text-muted">Log the first entry to start tracking weight, BMI and body measurements.</p>
+    <a href="{{ add_url }}" class="btn btn-fit">Add the first entry</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if latest %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+{{ chart|json_script:"chart-data" }}
+<script>
+  var d = JSON.parse(document.getElementById('chart-data').textContent);
+
+  function drawLine(id, datasets) {
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    new Chart(el, {
+      type: 'line',
+      data: { labels: d.labels, datasets: datasets },
+      options: {
+        maintainAspectRatio: false,
+        spanGaps: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: false } }
+      }
+    });
+  }
+
+  var weightSets = [{
+    label: 'Weight (kg)', data: d.weight, borderColor: '#7B2FF7',
+    backgroundColor: 'rgba(123,47,247,.15)', fill: true, tension: .3, pointRadius: 4
+  }];
+  if (d.target) {
+    weightSets.push({ label: 'Target (kg)', data: d.target, borderColor: '#F72585', borderDash: [6, 6], pointRadius: 0, fill: false });
+  }
+  drawLine('weightChart', weightSets);
+
+  function flat(value) { return d.labels.map(function () { return value; }); }
+  drawLine('bmiChart', [
+    { label: 'BMI', data: d.bmi, borderColor: '#00A98C', backgroundColor: 'rgba(0,201,167,.15)', fill: true, tension: .3, pointRadius: 4 },
+    { label: 'Healthy min (18.5)', data: flat(18.5), borderColor: '#FFC93C', borderDash: [4, 4], pointRadius: 0, fill: false },
+    { label: 'Healthy max (24.9)', data: flat(24.9), borderColor: '#FF6B35', borderDash: [4, 4], pointRadius: 0, fill: false }
+  ]);
+
+  var colors = { Chest: '#F72585', Waist: '#FF6B35', Hips: '#7B2FF7', Arms: '#3A86FF', Thighs: '#00C9A7' };
+  var bodySets = Object.keys(d.measurements).map(function (name) {
+    return { label: name + ' (cm)', data: d.measurements[name], borderColor: colors[name], tension: .3, pointRadius: 3, fill: false };
+  });
+  if (bodySets.length) { drawLine('bodyChart', bodySets); }
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}My Profile | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- Left: summary card -->
+    <div class="col-lg-4">
+      <div class="fit-card no-lift text-center">
+        {% if profile_user.photo %}
+          <img src="{{ profile_user.photo.url }}" class="avatar" alt="Profile photo">
+        {% else %}
+          <div class="avatar-initials">{{ profile_user.display_name|first|upper }}</div>
+        {% endif %}
+        <h4 class="fw-bold mt-3 mb-1">{{ profile_user.display_name }}</h4>
+        <span class="role-pill">{{ profile_user.get_role_display }}</span>
+        <p class="text-muted mt-3 mb-1"><i class="bi bi-at"></i> {{ profile_user.username }}</p>
+        {% if profile_user.email %}
+          <p class="text-muted mb-1"><i class="bi bi-envelope"></i> {{ profile_user.email }}</p>
+        {% endif %}
+        <p class="text-muted small">Joined {{ profile_user.date_joined|date:"d M Y" }}</p>
+        <a href="{% url 'password_change' %}" class="btn btn-fit-outline btn-sm">
+          <i class="bi bi-key"></i> Change password
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: edit form -->
+    <div class="col-lg-8">
+      <div class="fit-card no-lift">
+        <h4 class="fw-bold mb-4">Edit profile</h4>
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6">{% include 'includes/form_field.html' with field=form.first_name %}</div>
+            <div class="col-md-6">{% include 'includes/form_field.html' with field=form.last_name %}</div>
+            <div class="col-md-6">{% include 'includes/form_field.html' with field=form.email %}</div>
+            <div class="col-md-6">{% include 'includes/form_field.html' with field=form.phone %}</div>
+            <div class="col-md-6">{% include 'includes/form_field.html' with field=form.gender %}</div>
+            <div class="col-md-6">{% include 'includes/form_field.html' with field=form.date_of_birth %}</div>
+            <div class="col-12">{% include 'includes/form_field.html' with field=form.address %}</div>
+            <div class="col-12">{% include 'includes/form_field.html' with field=form.photo %}</div>
+          </div>
+          <button type="submit" class="btn btn-fit">Save changes</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

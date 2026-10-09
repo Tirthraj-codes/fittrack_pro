@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Page not found | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container auth-wrapper">
+  <div class="auth-card text-center">
+    <div class="icon-bubble grad-orange mx-auto"><i class="bi bi-compass-fill"></i></div>
+    <h3 class="fw-bold">Page not found</h3>
+    <p class="text-muted">We couldn't find the page you were looking for.</p>
+    <a href="{% url 'home' %}" class="btn btn-fit">Go to home</a>
+  </div>
+</div>
+{% endblock %}

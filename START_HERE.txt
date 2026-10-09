@@ -1,0 +1,25 @@
+FITTRACK PRO: START HERE
+
+You need: a Windows laptop with Python 3.12 or 3.13
+(download it from python.org and tick "Add python.exe to PATH" during the install).
+Internet is needed only for step 2.
+
+1. Unzip this folder anywhere (for example the Desktop).
+2. Double-click  setup.bat  and wait until it says "Setup finished" (about 2 minutes).
+3. Double-click  start_demo.bat. A black window opens and shows two addresses.
+   If Windows asks about the firewall, tick both boxes and click Allow.
+4. On the laptop, open  http://127.0.0.1:8000  in Chrome, Edge or Brave.
+5. On a phone connected to the same Wi-Fi or hotspot as the laptop,
+   open the green address shown in the black window.
+
+LOGINS
+  Admin   : admin / Admin@12345
+  Trainer : arjun.mehta / FitDemo@2026   (also priya.patel, rohan.shah)
+  Member  : aarav.sharma / FitDemo@2026  (also diya.nair, tara.bose, vivaan.joshi and more)
+
+THE DAY BEFORE THE DEMO
+  Close the black window, then double-click refresh_demo.bat so all dates in the
+  demo data are fresh (otherwise "expiring" memberships may already have expired).
+
+STOP THE APP: close the black window (or press Ctrl+C in it).
+More details: README.md

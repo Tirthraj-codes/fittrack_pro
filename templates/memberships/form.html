@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 680px;">
+  <div class="fit-card no-lift">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="icon-bubble {{ icon_class }} mb-0"><i class="bi {{ icon }}"></i></div>
+      <div>
+        <h4 class="fw-bold mb-0">{{ title }}</h4>
+        {% if subtitle %}<span class="text-muted small">{{ subtitle }}</span>{% endif %}
+      </div>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+        {% include 'includes/form_field.html' with field=field %}
+      {% endfor %}
+      <button type="submit" class="btn btn-fit">{{ submit_label }}</button>
+      <a href="{{ cancel_url }}" class="btn btn-fit-outline ms-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

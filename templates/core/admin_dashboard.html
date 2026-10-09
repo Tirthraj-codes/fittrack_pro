@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="fit-card no-lift mb-4 d-flex flex-wrap align-items-center gap-3">
+    <div class="icon-bubble grad-pink mb-0"><i class="bi bi-person-gear"></i></div>
+    <div>
+      <h3 class="fw-bold mb-1">Admin Dashboard</h3>
+      <span class="text-muted">Welcome back, {{ user.display_name }} 👋</span>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-lg">
+      <div class="stat-card grad-blue"><div class="stat-number">{{ total_members }}</div><div class="stat-label">Members</div></div>
+    </div>
+    <div class="col-6 col-lg">
+      <div class="stat-card grad-purple"><div class="stat-number">{{ total_trainers }}</div><div class="stat-label">Trainers</div></div>
+    </div>
+    <div class="col-6 col-lg">
+      <div class="stat-card grad-teal"><div class="stat-number">{{ running_memberships }}</div><div class="stat-label">Running memberships</div></div>
+    </div>
+    <div class="col-6 col-lg">
+      <div class="stat-card grad-orange"><div class="stat-number">{{ expiring_count }}</div><div class="stat-label">Expiring in 7 days</div></div>
+    </div>
+    <div class="col-6 col-lg">
+      <div class="stat-card grad-pink"><div class="stat-number">{{ expired_count }}</div><div class="stat-label">Expired</div></div>
+    </div>
+        <div class="col-6 col-lg">
+      <div class="stat-card grad-blue"><div class="stat-number">{{ visits_today }}</div><div class="stat-label">Visits today</div></div>
+    </div>
+  </div>
+  <div class="row g-4 mb-4">
+    <div class="col-md-4"><div class="stat-card grad-teal"><div class="stat-number">₹{{ collected_this_month|floatformat:"-2" }}</div><div class="stat-label">Collected this month</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-orange"><div class="stat-number">₹{{ pending_total|floatformat:"-2" }}</div><div class="stat-label">Unpaid (pending + overdue)</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-pink"><div class="stat-number">{{ overdue_count }}</div><div class="stat-label">Overdue payments</div></div></div>
+  </div>
+  <div class="fit-card no-lift mb-4">
+    <h5 class="fw-bold mb-3">Quick actions</h5>
+    <a href="{% url 'payment_list' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-cash-coin"></i> Payments</a>
+    <a href="{% url 'attendance_desk' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-qr-code-scan"></i> Front desk</a>
+    <a href="{% url 'membership_assign' %}" class="btn btn-fit me-2 mb-2"><i class="bi bi-person-check-fill"></i> Assign membership</a>
+    <a href="{% url 'plan_list' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-card-checklist"></i> Manage plans</a>
+    <a href="{% url 'user_list' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-people-fill"></i> Manage users</a>
+    <a href="{% url 'user_create' %}" class="btn btn-fit-outline mb-2"><i class="bi bi-person-plus-fill"></i> Add trainer / admin</a>
+    <a href="{% url 'schedule_week' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-calendar-week-fill"></i> Schedule</a>
+    <a href="{% url 'assignment_list' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-person-lines-fill"></i> Trainer assignments</a>
+    <a href="{% url 'progress_overview' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-graph-up-arrow"></i> Member progress</a>
+    <a href="{% url 'reminder_log' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-bell-fill"></i> Reminders</a>
+    <a href="{% url 'report_dashboard' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-bar-chart-line-fill"></i> Reports</a>
+  </div>
+
+  <div class="fit-card no-lift">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="bi bi-hourglass-split text-warning"></i> Expiring in the next 7 days</h5>
+      <a href="{% url 'membership_list' %}?status=expiring" class="small" style="color: var(--fit-purple);">View all</a>
+    </div>
+    {% if expiring_list %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Member</th><th>Plan</th><th>Ends</th><th>Days left</th><th></th></tr></thead>
+        <tbody>
+          {% for m in expiring_list %}
+          <tr>
+            <td class="fw-semibold">{{ m.member.display_name }}</td>
+            <td>{{ m.plan.name }}</td>
+            <td>{{ m.end_date|date:"d M Y" }}</td>
+            <td><span class="badge-soft badge-soft-orange">{{ m.days_left }}</span></td>
+            <td class="text-end"><a href="{% url 'membership_renew' m.pk %}" class="btn btn-sm btn-outline-success rounded-pill px-3">Renew</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted mb-0">Nothing is expiring soon. 🎉</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

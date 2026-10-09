@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Payments | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Payments</h3>
+      <span class="text-muted">Overdue is flagged automatically after the due date.</span>
+    </div>
+    <a href="{% url 'payment_create' %}" class="btn btn-fit"><i class="bi bi-plus-circle-fill"></i> Add payment</a>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-4"><div class="stat-card grad-teal"><div class="stat-number">₹{{ collected_this_month|floatformat:"-2"|intcomma }}</div><div class="stat-label">Collected this month</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-orange"><div class="stat-number">₹{{ unpaid_total|floatformat:"-2"|intcomma }}</div><div class="stat-label">Unpaid (pending + overdue)</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-pink"><div class="stat-number">{{ overdue_count }}</div><div class="stat-label">Overdue payments</div></div></div>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'payment_list' %}" class="chip {% if not status %}chip-active{% endif %}">All <b>{{ total }}</b></a>
+    {% for chip in chips %}
+      <a href="?status={{ chip.key }}" class="chip {% if status == chip.key %}chip-active{% endif %}">{{ chip.label }} <b>{{ chip.count }}</b></a>
+    {% endfor %}
+  </div>
+
+  <div class="fit-card no-lift">
+    <form method="get" class="row g-2 mb-4">
+      <input type="hidden" name="status" value="{{ status }}">
+      <div class="col-md-8">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search member, description, receipt or transaction ID">
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-fit">Search</button>
+        <a href="{% url 'payment_list' %}" class="btn btn-fit-outline">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle fit-table mb-0">
+        <thead><tr><th>Member</th><th>Description</th><th>Amount</th><th>Due</th><th>Status</th><th>Paid via</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ p.member.display_name }}</div>
+              <div class="text-muted small">@{{ p.member.username }}</div>
+            </td>
+            <td>
+              {{ p.description }}
+              {% if p.receipt_no %}<div class="text-muted small">{{ p.receipt_no }}</div>{% endif %}
+            </td>
+            <td>₹{{ p.amount|floatformat:"-2"|intcomma }}</td>
+            <td>{{ p.due_date|date:"d M Y" }}</td>
+            <td>{% include 'includes/payment_badge.html' with payment=p %}</td>
+            <td>
+              {% if p.method %}{{ p.get_method_display }}{% else %}-{% endif %}
+              {% if p.transaction_id %}<div class="text-muted small">{{ p.transaction_id }}</div>{% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+              {% if p.status == 'pending' %}
+                <a href="{% url 'payment_mark_paid' p.pk %}" class="btn btn-sm btn-outline-success rounded-pill px-3">Mark paid</a>
+                <form method="post" action="{% url 'payment_cancel' p.pk %}" class="d-inline"
+                      onsubmit="return confirm('Cancel this payment?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Cancel</button>
+                </form>
+              {% elif p.status == 'paid' %}
+                <a href="{% url 'payment_receipt' p.pk %}" target="_blank" class="btn btn-sm btn-fit-outline"><i class="bi bi-file-earmark-pdf-fill"></i> Receipt</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No payments found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

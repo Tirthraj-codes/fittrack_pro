@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}My Members | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">My Members</h3>
+      <span class="text-muted">Members assigned to you by the admin.</span>
+    </div>
+    <a href="{% url 'session_create' %}" class="btn btn-fit"><i class="bi bi-plus-circle-fill"></i> Add session</a>
+  </div>
+
+  <div class="fit-card no-lift">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Member</th><th>Contact</th><th>Membership</th><th>Next session</th><th></th></tr></thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ row.member.display_name }}</div>
+              <div class="text-muted small">@{{ row.member.username }}</div>
+            </td>
+            <td class="small">
+              {% if row.member.phone %}<div><i class="bi bi-telephone"></i> {{ row.member.phone }}</div>{% endif %}
+              {% if row.member.email %}<div><i class="bi bi-envelope"></i> {{ row.member.email }}</div>{% endif %}
+              {% if not row.member.phone and not row.member.email %}-{% endif %}
+            </td>
+            <td>
+              {% if row.membership %}
+                {% include 'includes/status_badge.html' with membership=row.membership %}
+                <div class="text-muted small">{{ row.membership.plan.name }}</div>
+              {% else %}
+                <span class="badge-soft badge-soft-gray">No membership</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if row.next_session %}
+                <a href="{% url 'session_detail' row.next_session.pk %}" style="color: var(--fit-purple);">
+                  {{ row.next_session.date|date:"D, d M" }}, {{ row.next_session.start_time|time:"h:i A" }}
+                </a>
+              {% else %}
+                <span class="text-muted">None booked</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'session_create' %}?member={{ row.member.pk }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Book session</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">No members are assigned to you yet. Ask the admin to assign some.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

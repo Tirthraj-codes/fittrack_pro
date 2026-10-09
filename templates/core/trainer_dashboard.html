@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Trainer Dashboard | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="fit-card no-lift mb-4 d-flex flex-wrap align-items-center gap-3">
+    <div class="icon-bubble grad-blue mb-0"><i class="bi bi-person-lines-fill"></i></div>
+    <div>
+      <h3 class="fw-bold mb-1">Trainer Dashboard</h3>
+      <span class="text-muted">Welcome back, {{ user.display_name }} 💪</span>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-4"><div class="stat-card grad-blue"><div class="stat-number">{{ assigned_count }}</div><div class="stat-label">Assigned members</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-teal"><div class="stat-number">{{ today_sessions|length }}</div><div class="stat-label">Sessions today</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-orange"><div class="stat-number">{{ upcoming_count }}</div><div class="stat-label">Sessions in the next 7 days</div></div></div>
+  </div>
+
+  <div class="fit-card no-lift mb-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-calendar-day"></i> Today's sessions</h5>
+    {% for s in today_sessions %}
+      <a href="{% url 'session_detail' s.pk %}" class="session-card s-{{ s.status }} mb-2">
+        <div class="session-time">{{ s.start_time|time:"h:i A" }} - {{ s.end_time|time:"h:i A" }}</div>
+        <div>{{ s.get_kind_display }} with {{ s.member.display_name }}</div>
+      </a>
+    {% empty %}
+      <p class="text-muted mb-0">No sessions today.</p>
+    {% endfor %}
+  </div>
+
+  <div class="fit-card no-lift">
+    <h5 class="fw-bold mb-3">Quick actions</h5>
+    <a href="{% url 'schedule_week' %}" class="btn btn-fit me-2 mb-2"><i class="bi bi-calendar-week-fill"></i> Weekly schedule</a>
+    <a href="{% url 'my_members' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-person-lines-fill"></i> My members</a>
+    <a href="{% url 'availability' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-clock"></i> My availability</a>
+    <a href="{% url 'attendance_desk' %}" class="btn btn-fit-outline mb-2"><i class="bi bi-qr-code-scan"></i> Front desk</a>
+    <a href="{% url 'progress_overview' %}" class="btn btn-fit-outline me-2 mb-2"><i class="bi bi-graph-up-arrow"></i> Member progress</a>
+  </div>
+</div>
+{% endblock %}

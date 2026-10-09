@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}My Payments | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h3 class="fw-bold mb-4">My Payments</h3>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-4"><div class="stat-card grad-teal"><div class="stat-number">₹{{ total_paid|floatformat:"-2"|intcomma }}</div><div class="stat-label">Total paid</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-orange"><div class="stat-number">₹{{ amount_due|floatformat:"-2"|intcomma }}</div><div class="stat-label">Amount due</div></div></div>
+    <div class="col-md-4"><div class="stat-card grad-pink"><div class="stat-number">{{ overdue_count }}</div><div class="stat-label">Overdue payments</div></div></div>
+  </div>
+
+  {% if due_count %}
+    <div class="alert alert-warning">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      You have <b>{{ due_count }}</b> payment{{ due_count|pluralize }} waiting. Click <b>Pay now</b> to complete {{ due_count|pluralize:"it,them" }}.
+    </div>
+  {% endif %}
+
+  <div class="fit-card no-lift">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Description</th><th>Amount</th><th>Due</th><th>Status</th><th>Method</th><th class="text-end">Action</th></tr></thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ p.description }}</div>
+              <div class="text-muted small">{% if p.receipt_no %}{{ p.receipt_no }}{% else %}Added {{ p.created_at|date:"d M Y" }}{% endif %}</div>
+            </td>
+            <td>₹{{ p.amount|floatformat:"-2"|intcomma }}</td>
+            <td>{{ p.due_date|date:"d M Y" }}</td>
+            <td>{% include 'includes/payment_badge.html' with payment=p %}</td>
+            <td>
+              {% if p.method %}{{ p.get_method_display }}{% else %}-{% endif %}
+              {% if p.paid_on %}<div class="text-muted small">{{ p.paid_on|date:"d M Y" }}</div>{% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+              {% if p.status == 'pending' %}
+                <a href="{% url 'payment_checkout' p.pk %}" class="btn btn-fit btn-sm">Pay now</a>
+              {% elif p.status == 'paid' %}
+                <a href="{% url 'payment_receipt' p.pk %}" target="_blank" class="btn btn-fit-outline btn-sm"><i class="bi bi-file-earmark-pdf-fill"></i> Receipt</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No payments yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

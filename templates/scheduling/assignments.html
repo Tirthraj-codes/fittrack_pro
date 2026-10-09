@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Trainer Assignments | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="mb-4">
+    <h3 class="fw-bold mb-0">Trainer Assignments</h3>
+    <span class="text-muted">Give each member a trainer. A trainer sees their assigned members on their own page.</span>
+  </div>
+
+  <div class="row g-3 mb-4">
+    {% for t in trainers %}
+      <div class="col-6 col-md-3">
+        <div class="stat-card grad-blue"><div class="stat-number">{{ t.member_count }}</div><div class="stat-label">{{ t.display_name }}</div></div>
+      </div>
+    {% empty %}
+      <div class="col-12"><div class="alert alert-warning mb-0">No trainers yet. Add one from Users.</div></div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'assignment_list' %}" class="chip {% if not show %}chip-active{% endif %}">All members</a>
+    <a href="?show=unassigned" class="chip {% if show == 'unassigned' %}chip-active{% endif %}">Unassigned only</a>
+  </div>
+
+  <div class="fit-card no-lift">
+    <form method="get" class="row g-2 mb-4">
+      <input type="hidden" name="show" value="{{ show }}">
+      <div class="col-md-8"><input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search member name or username"></div>
+      <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-fit">Search</button>
+        <a href="{% url 'assignment_list' %}" class="btn btn-fit-outline">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle fit-table mb-0">
+        <thead><tr><th>Member</th><th>Current trainer</th><th style="min-width: 300px;">Change trainer</th></tr></thead>
+        <tbody>
+          {% for m in members %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ m.display_name }}</div>
+              <div class="text-muted small">@{{ m.username }}</div>
+            </td>
+            <td>
+              {% if m.trainer_assignment %}
+                <span class="badge-soft badge-soft-blue">{{ m.trainer_assignment.trainer.display_name }}</span>
+              {% else %}
+                <span class="badge-soft badge-soft-orange">Unassigned</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="post" action="{% url 'assignment_set' m.pk %}" class="d-flex gap-2">
+                {% csrf_token %}
+                <select name="trainer" class="form-select form-select-sm">
+                  <option value="">No trainer</option>
+                  {% for t in trainers %}
+                    <option value="{{ t.pk }}" {% if m.trainer_assignment.trainer_id == t.pk %}selected{% endif %}>{{ t.display_name }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-fit btn-sm">Save</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-center text-muted py-4">No members found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

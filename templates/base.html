@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-sw-url="{% url 'pwa_service_worker' %}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FitTrack Pro{% endblock %}</title>
+       <link rel="manifest" href="{% url 'pwa_manifest' %}">
+     <meta name="theme-color" content="#7B2FF7">
+     <meta name="mobile-web-app-capable" content="yes">
+     <meta name="apple-mobile-web-app-capable" content="yes">
+     <meta name="apple-mobile-web-app-title" content="FitTrack">
+     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+     <link rel="apple-touch-icon" href="{% static 'pwa/icons/apple-touch-icon.png' %}">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏋️</text></svg>">
+
+    <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ===== Navbar ===== -->
+     <!-- ===== Navbar ===== -->
+  {% with current=request.resolver_match.url_name %}
+  <nav class="navbar navbar-expand-xl navbar-dark fit-navbar sticky-top">
+    <div class="container-fluid px-xl-4">
+      <a class="navbar-brand" href="{% url 'home' %}">
+        <i class="bi bi-lightning-charge-fill text-warning"></i> FitTrack Pro
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto mb-2 mb-xl-0">
+
+          {% if not user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link {% if current == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+          </li>
+
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link {% if 'dashboard' in current %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
+          </li>
+
+          {% if user.is_admin_role %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if current == 'user_list' or current == 'user_create' or current == 'assignment_list' or 'progress' in current or 'entry_' in current or 'goal_' in current or current == 'member_plan' %}active{% endif %}" href="#" data-bs-toggle="dropdown">People</a>
+            <ul class="dropdown-menu border-0 shadow">
+              <li><a class="dropdown-item" href="{% url 'user_list' %}"><i class="bi bi-people"></i> Users</a></li>
+              <li><a class="dropdown-item" href="{% url 'assignment_list' %}"><i class="bi bi-person-lines-fill"></i> Trainer assignments</a></li>
+              <li><a class="dropdown-item" href="{% url 'progress_overview' %}"><i class="bi bi-graph-up-arrow"></i> Member progress</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if 'membership' in current or 'plan_' in current %}active{% endif %}" href="#" data-bs-toggle="dropdown">Memberships</a>
+            <ul class="dropdown-menu border-0 shadow">
+              <li><a class="dropdown-item" href="{% url 'membership_list' %}"><i class="bi bi-card-list"></i> All memberships</a></li>
+              <li><a class="dropdown-item" href="{% url 'plan_list' %}"><i class="bi bi-card-checklist"></i> Plans</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'attendance' in current %}active{% endif %}" href="{% url 'attendance_desk' %}">Attendance</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'payment' in current %}active{% endif %}" href="{% url 'payment_list' %}">Payments</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if 'schedule' in current or 'session' in current or current == 'availability' %}active{% endif %}" href="#" data-bs-toggle="dropdown">Schedule</a>
+            <ul class="dropdown-menu border-0 shadow">
+              <li><a class="dropdown-item" href="{% url 'schedule_week' %}"><i class="bi bi-calendar-week"></i> Weekly schedule</a></li>
+              <li><a class="dropdown-item" href="{% url 'session_create' %}"><i class="bi bi-calendar-plus"></i> Add session</a></li>
+              <li><a class="dropdown-item" href="{% url 'availability' %}"><i class="bi bi-clock"></i> Trainer availability</a></li>
+            </ul>
+          </li>
+                    <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if current == 'reminder_log' or 'report' in current or 'export_' in current %}active{% endif %}" href="#" data-bs-toggle="dropdown">More</a>
+            <ul class="dropdown-menu border-0 shadow">
+              <li><a class="dropdown-item" href="{% url 'report_dashboard' %}"><i class="bi bi-bar-chart-line"></i> Reports</a></li>
+              <li><a class="dropdown-item" href="{% url 'reminder_log' %}"><i class="bi bi-bell"></i> Reminder log</a></li>
+            </ul>
+          </li>
+
+          {% elif user.is_trainer %}
+          <li class="nav-item">
+            <a class="nav-link {% if 'attendance' in current %}active{% endif %}" href="{% url 'attendance_desk' %}">Attendance</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if 'schedule' in current or 'session' in current or current == 'availability' or current == 'my_members' or 'progress' in current or 'entry_' in current or 'goal_' in current or current == 'member_plan' %}active{% endif %}" href="#" data-bs-toggle="dropdown">Training</a>
+            <ul class="dropdown-menu border-0 shadow">
+              <li><a class="dropdown-item" href="{% url 'schedule_week' %}"><i class="bi bi-calendar-week"></i> Weekly schedule</a></li>
+              <li><a class="dropdown-item" href="{% url 'session_create' %}"><i class="bi bi-calendar-plus"></i> Add session</a></li>
+              <li><a class="dropdown-item" href="{% url 'my_members' %}"><i class="bi bi-person-lines-fill"></i> My members</a></li>
+              <li><a class="dropdown-item" href="{% url 'availability' %}"><i class="bi bi-clock"></i> My availability</a></li>
+              <li><a class="dropdown-item" href="{% url 'progress_overview' %}"><i class="bi bi-graph-up-arrow"></i> Member progress</a></li>
+            </ul>
+          </li>
+
+          {% elif user.is_member %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if 'membership' in current or 'attendance' in current or 'payment' in current %}active{% endif %}" href="#" data-bs-toggle="dropdown">My Gym</a>
+            <ul class="dropdown-menu border-0 shadow">
+              <li><a class="dropdown-item" href="{% url 'my_membership' %}"><i class="bi bi-card-list"></i> My membership</a></li>
+              <li><a class="dropdown-item" href="{% url 'my_attendance' %}"><i class="bi bi-qr-code"></i> My attendance</a></li>
+              <li><a class="dropdown-item" href="{% url 'my_payments' %}"><i class="bi bi-credit-card-2-front"></i> My payments</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if 'schedule' in current or 'session' in current or 'progress' in current or 'entry_' in current or 'goal_' in current or current == 'my_plan' %}active{% endif %}" href="#" data-bs-toggle="dropdown">Training</a>
+            <ul class="dropdown-menu border-0 shadow">
+              <li><a class="dropdown-item" href="{% url 'schedule_week' %}"><i class="bi bi-calendar-week"></i> Schedule</a></li>
+              <li><a class="dropdown-item" href="{% url 'my_progress' %}"><i class="bi bi-graph-up-arrow"></i> My progress</a></li>
+              <li><a class="dropdown-item" href="{% url 'my_plan' %}"><i class="bi bi-lightning-charge"></i> Workout &amp; diet plan</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          {# Reports link gets added to the "More" menu in a later step #}
+          {% endif %}
+        </ul>
+
+        <div class="d-flex align-items-center gap-2 mt-2 mt-xl-0">
+          {% if user.is_authenticated %}
+            <a href="{% url 'notification_list' %}" class="nav-link position-relative text-white px-2" title="Notifications">
+              <i class="bi bi-bell-fill fs-5"></i>
+              {% if unread_count %}<span class="bell-badge">{{ unread_count }}</span>{% endif %}
+            </a>
+            <div class="dropdown">
+              <a class="btn btn-light-pill btn-sm px-3 py-1 dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+                {% if user.photo %}
+                  <img src="{{ user.photo.url }}" class="nav-avatar" alt="">
+                {% else %}
+                  <i class="bi bi-person-circle"></i>
+                {% endif %}
+                {{ user.display_name }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                <li class="px-3 py-1"><span class="role-pill">{{ user.get_role_display }}</span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person"></i> My profile</a></li>
+                <li><a class="dropdown-item" href="{% url 'password_change' %}"><i class="bi bi-key"></i> Change password</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+          {% else %}
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm px-4 py-1 rounded-pill">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-light-pill btn-sm px-4 py-1">Register</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+  {% endwith %}
+
+  <!-- ===== Flash messages ===== -->
+  {% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ===== Page content ===== -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="fit-footer text-center">
+    <div class="container">© {% now "Y" %} FitTrack Pro · Integrated Fitness Club Management System</div>
+  </footer>
+       <button id="install-app" type="button" class="btn btn-fit install-fab d-none no-print"><i class="bi bi-download"></i> Install app</button>
+     <div id="ios-hint" class="ios-hint d-none no-print">
+       <i class="bi bi-box-arrow-up fs-3" style="color: var(--fit-purple);"></i>
+       <div class="small flex-grow-1"><b>Install FitTrack Pro:</b> tap <b>Share</b>, then <b>Add to Home Screen</b>.</div>
+       <button type="button" class="btn-close" aria-label="Close"></button>
+     </div>
+    <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+
+  <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/pwa.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Add user | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 760px;">
+  <div class="fit-card no-lift">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="icon-bubble grad-blue mb-0"><i class="bi bi-person-plus-fill"></i></div>
+      <div>
+        <h4 class="fw-bold mb-0">Add trainer or admin</h4>
+        <span class="text-muted small">Members sign up on their own from the Register page.</span>
+      </div>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="row">
+        {% for field in form %}
+          <div class="col-md-6">{% include 'includes/form_field.html' with field=field %}</div>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn btn-fit">Create account</button>
+      <a href="{% url 'user_list' %}" class="btn btn-fit-outline ms-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

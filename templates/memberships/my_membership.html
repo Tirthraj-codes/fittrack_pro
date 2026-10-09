@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}My Membership | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h3 class="fw-bold mb-4">My Membership</h3>
+
+  {% if current %}
+    {% if current.status == 'expiring' %}
+      <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        Your membership expires in <b>{{ current.days_left }} day{{ current.days_left|pluralize }}</b>. Please renew at the front desk.
+      </div>
+    {% endif %}
+
+    <div class="fit-card no-lift mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+          <h4 class="fw-bold mb-1">{{ current.plan.name }}</h4>
+          <span class="text-muted">{{ current.plan.duration_label }} plan · ₹{{ current.amount|floatformat:"-2"|intcomma }}</span>
+        </div>
+        {% include 'includes/status_badge.html' with membership=current %}
+      </div>
+
+      <div class="row my-4 text-center">
+        <div class="col-6"><div class="text-muted small">Starts</div><div class="fw-bold">{{ current.start_date|date:"d M Y" }}</div></div>
+        <div class="col-6"><div class="text-muted small">Ends</div><div class="fw-bold">{{ current.end_date|date:"d M Y" }}</div></div>
+      </div>
+
+      {% if current.status == 'upcoming' %}
+        <p class="text-muted mb-0">Your membership starts in {{ current.start_date|timeuntil }}.</p>
+      {% else %}
+        <div class="progress progress-fit mb-2"><div class="progress-bar" style="width: {{ current.progress_percent }}%"></div></div>
+        <div class="d-flex justify-content-between small text-muted">
+          <span>{{ current.progress_percent }}% used</span>
+          <span><b>{{ current.days_left }}</b> day{{ current.days_left|pluralize }} left</span>
+        </div>
+      {% endif %}
+
+      <hr>
+      <ul class="list-unstyled mb-0">
+        {% for feature in current.plan.feature_list %}
+          <li class="mb-1"><i class="bi bi-check-circle-fill text-success"></i> {{ feature }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+  {% elif latest %}
+    <div class="alert alert-danger">
+      <i class="bi bi-x-circle-fill"></i>
+      Your last membership ({{ latest.plan.name }}) is <b>{{ latest.status_label|lower }}</b>. Please visit the front desk to renew.
+    </div>
+  {% else %}
+    <div class="fit-card text-center text-muted mb-4">You don't have a membership yet. Ask the front desk to assign a plan.</div>
+  {% endif %}
+
+  {% if history %}
+  <div class="fit-card no-lift">
+    <h5 class="fw-bold mb-3">History</h5>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Plan</th><th>Type</th><th>Starts</th><th>Ends</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for m in history %}
+          <tr>
+            <td>{{ m.plan.name }}</td>
+            <td>{{ m.get_kind_display }}</td>
+            <td>{{ m.start_date|date:"d M Y" }}</td>
+            <td>{{ m.end_date|date:"d M Y" }}</td>
+            <td>{% include 'includes/status_badge.html' with membership=m %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

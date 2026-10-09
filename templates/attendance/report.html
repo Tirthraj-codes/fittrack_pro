@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Front Desk | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Monthly Attendance Report</h3>
+      <span class="text-muted">{{ month_label|date:"F Y" }}</span>
+    </div>
+    <form method="get" class="d-flex gap-2">
+      <input type="month" name="month" value="{{ month_value }}" class="form-control">
+      <button type="submit" class="btn btn-fit">Show</button>
+    </form>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card grad-teal"><div class="stat-number">{{ total_visits }}</div><div class="stat-label">Total visits</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card grad-blue"><div class="stat-number">{{ members_visited }}</div><div class="stat-label">Members who visited</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card grad-orange"><div class="stat-number">{{ avg_per_day }}</div><div class="stat-label">Average visits / day</div></div></div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-pink">
+        <div class="stat-number">{% if busiest_day %}{{ busiest_day|date:"d M" }}{% else %}-{% endif %}</div>
+        <div class="stat-label">Busiest day{% if busiest_day %} ({{ busiest_count }}){% endif %}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fit-card no-lift mb-4">
+    <h5 class="fw-bold mb-3">Visits per day</h5>
+    <div style="height: 300px;"><canvas id="dailyChart"></canvas></div>
+  </div>
+
+  <div class="fit-card no-lift">
+    <h5 class="fw-bold mb-3">Per member</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle fit-table mb-0">
+        <thead><tr><th>Member</th><th>Days attended</th><th>Total time</th><th>Last visit</th></tr></thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ row.member.display_name }}</div>
+              <div class="text-muted small">@{{ row.member.username }}</div>
+            </td>
+            <td><span class="badge-soft badge-soft-success">{{ row.days }}</span></td>
+            <td>{{ row.time_label }}</td>
+            <td>{{ row.last_visit|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center text-muted py-4">No attendance recorded for this month.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_data|json_script:"chart-data" }}
+<script>
+  var labels = JSON.parse(document.getElementById('chart-labels').textContent);
+  var data = JSON.parse(document.getElementById('chart-data').textContent);
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{ label: 'Visits', data: data, backgroundColor: '#F72585', borderRadius: 6 }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Reports | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="mb-4">
+    <h3 class="fw-bold mb-0">Reports</h3>
+    <span class="text-muted">{{ start|date:"d M Y" }} to {{ end|date:"d M Y" }}</span>
+  </div>
+
+  <!-- Date range -->
+  <div class="fit-card no-lift mb-4 no-print">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label fw-semibold small mb-1">From</label>
+        <input type="date" name="from" value="{{ start|date:'Y-m-d' }}" class="form-control">
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label fw-semibold small mb-1">To</label>
+        <input type="date" name="to" value="{{ end|date:'Y-m-d' }}" class="form-control">
+      </div>
+      <div class="col-sm-4 col-md-3"><button type="submit" class="btn btn-fit w-100">Show report</button></div>
+    </form>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      {% for p in presets %}
+        <a href="?from={{ p.from }}&to={{ p.to }}" class="chip {% if p.active %}chip-active{% endif %}">{{ p.label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Exports -->
+  <div class="fit-card no-lift mb-4 no-print">
+    <h6 class="fw-bold mb-3"><i class="bi bi-download"></i> Export</h6>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'export_summary' %}?{{ query }}" class="btn btn-fit"><i class="bi bi-file-earmark-pdf-fill"></i> Club report (PDF)</a>
+      <a href="{% url 'export_payments' %}?{{ query }}" class="btn btn-fit-outline"><i class="bi bi-filetype-csv"></i> Payments</a>
+      <a href="{% url 'export_memberships' %}?{{ query }}" class="btn btn-fit-outline"><i class="bi bi-filetype-csv"></i> Memberships sold</a>
+      <a href="{% url 'export_attendance' %}?{{ query }}" class="btn btn-fit-outline"><i class="bi bi-filetype-csv"></i> Attendance</a>
+      <a href="{% url 'export_dues' %}" class="btn btn-fit-outline"><i class="bi bi-filetype-csv"></i> Unpaid dues (today)</a>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card grad-teal"><div class="stat-number fs-4">₹{{ summary.revenue_total|floatformat:"-2"|intcomma }}</div><div class="stat-label">Revenue collected</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card grad-orange"><div class="stat-number fs-4">₹{{ summary.outstanding_total|floatformat:"-2"|intcomma }}</div><div class="stat-label">Unpaid dues (today)</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card grad-purple"><div class="stat-number fs-4">{{ summary.sold }}</div><div class="stat-label">Memberships sold</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card grad-blue"><div class="stat-number fs-4">{{ summary.active_members }}</div><div class="stat-label">Members running today</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card grad-pink"><div class="stat-number fs-4">{{ summary.signups }}</div><div class="stat-label">New sign-ups</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card grad-teal"><div class="stat-number fs-4">{{ summary.visits }}</div><div class="stat-label">Gym visits</div></div></div>
+  </div>
+
+  <!-- ================= Revenue ================= -->
+  <h4 class="fw-bold mb-3"><i class="bi bi-cash-coin text-success"></i> Revenue</h4>
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="fit-card no-lift"><h6 class="fw-bold mb-3">Revenue per month</h6><div class="chart-box"><canvas id="revenueChart"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="fit-card no-lift">
+        <h6 class="fw-bold mb-3">By payment method</h6>
+        {% if revenue.by_method %}<div class="chart-box"><canvas id="methodChart"></canvas></div>
+        {% else %}<p class="text-muted mb-0">No payments in this period.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="row g-4 mb-5">
+    <div class="col-lg-6">
+      <div class="fit-card no-lift">
+        <h6 class="fw-bold mb-3">By plan</h6>
+        {% if revenue.by_plan %}<div class="chart-box"><canvas id="planChart"></canvas></div>
+        {% else %}<p class="text-muted mb-0">No payments in this period.</p>{% endif %}
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="fit-card no-lift mb-4">
+        <h6 class="fw-bold mb-3">Breakdown</h6>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead><tr><th>Method</th><th>Payments</th><th class="text-end">Revenue</th></tr></thead>
+            <tbody>
+              {% for r in revenue.by_method %}<tr><td>{{ r.name }}</td><td>{{ r.count }}</td><td class="text-end">₹{{ r.total|floatformat:"-2"|intcomma }}</td></tr>
+              {% empty %}<tr><td colspan="3" class="text-muted text-center">No data</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="fit-card no-lift">
+        <h6 class="fw-bold mb-3">Still to collect (today)</h6>
+        <p class="mb-1">Unpaid: <b>₹{{ revenue.outstanding.total|floatformat:"-2"|intcomma }}</b> in {{ revenue.outstanding.count }} payment{{ revenue.outstanding.count|pluralize }}</p>
+        <p class="mb-0">Overdue: <b class="text-danger">₹{{ revenue.outstanding.overdue_total|floatformat:"-2"|intcomma }}</b> in {{ revenue.outstanding.overdue_count }} payment{{ revenue.outstanding.overdue_count|pluralize }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Memberships ================= -->
+  <h4 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary"></i> Membership growth</h4>
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="fit-card no-lift"><h6 class="fw-bold mb-3">Memberships sold per month</h6><div class="chart-box"><canvas id="soldChart"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="fit-card no-lift"><h6 class="fw-bold mb-3">Status today</h6><div class="chart-box"><canvas id="statusChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="row g-4 mb-5">
+    <div class="col-lg-6">
+      <div class="fit-card no-lift"><h6 class="fw-bold mb-3">New member sign-ups per month</h6><div class="chart-box"><canvas id="signupChart"></canvas></div></div>
+    </div>
+    <div class="col-lg-6">
+      <div class="fit-card no-lift">
+        <h6 class="fw-bold mb-3">Monthly breakdown</h6>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead><tr><th>Month</th><th>New</th><th>Renewals</th><th>Upgrades</th><th>Sign-ups</th></tr></thead>
+            <tbody>
+              {% for r in memberships.monthly %}<tr><td>{{ r.label }}</td><td>{{ r.new }}</td><td>{{ r.renewal }}</td><td>{{ r.upgrade }}</td><td>{{ r.signups }}</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Attendance ================= -->
+  <h4 class="fw-bold mb-3"><i class="bi bi-qr-code-scan text-danger"></i> Attendance trends</h4>
+  <p class="text-muted">{{ attendance.total_visits }} visit{{ attendance.total_visits|pluralize }} by {{ attendance.unique_members }} member{{ attendance.unique_members|pluralize }}, about {{ attendance.avg_per_day }} per day.</p>
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="fit-card no-lift"><h6 class="fw-bold mb-3">Visits per week</h6><div class="chart-box"><canvas id="weeklyChart"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="fit-card no-lift"><h6 class="fw-bold mb-3">Busiest weekdays</h6><div class="chart-box"><canvas id="weekdayChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="fit-card no-lift"><h6 class="fw-bold mb-3">Peak hours (check-in time)</h6><div class="chart-box"><canvas id="hourChart"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="fit-card no-lift">
+        <h6 class="fw-bold mb-3">Most regular members</h6>
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Member</th><th class="text-end">Days</th></tr></thead>
+          <tbody>
+            {% for r in attendance.top_members %}<tr><td>{{ r.name }}</td><td class="text-end"><span class="badge-soft badge-soft-success">{{ r.days }}</span></td></tr>
+            {% empty %}<tr><td colspan="2" class="text-muted text-center">No visits in this period</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+{{ chart|json_script:"chart-data" }}
+<script>
+  var d = JSON.parse(document.getElementById('chart-data').textContent);
+  var palette = ['#7B2FF7', '#F72585', '#FF6B35', '#00C9A7', '#3A86FF', '#FFC93C'];
+
+  function make(id, type, data, options) {
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    new Chart(el, { type: type, data: data, options: Object.assign({ maintainAspectRatio: false }, options || {}) });
+  }
+  function bar(id, labels, values, color, options) {
+    make(id, 'bar', { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 6 }] },
+      Object.assign({ plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }, options || {}));
+  }
+  function doughnut(id, labels, values) {
+    make(id, 'doughnut', { labels: labels, datasets: [{ data: values, backgroundColor: palette }] },
+      { plugins: { legend: { position: 'bottom' } } });
+  }
+  function line(id, labels, values, color) {
+    make(id, 'line', { labels: labels, datasets: [{ data: values, borderColor: color, backgroundColor: color + '26', fill: true, tension: .3, pointRadius: 3 }] },
+      { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } });
+  }
+  function rupees(value) { return '₹' + Number(value).toLocaleString('en-IN'); }
+
+  // Revenue
+  bar('revenueChart', d.revenue.labels, d.revenue.values, '#00C9A7', {
+    scales: { y: { beginAtZero: true, ticks: { callback: rupees } } },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return rupees(c.parsed.y); } } } }
+  });
+  doughnut('methodChart', d.method.labels, d.method.values);
+  make('planChart', 'bar', { labels: d.plan.labels, datasets: [{ data: d.plan.values, backgroundColor: palette, borderRadius: 6 }] },
+    { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { callback: rupees } } } });
+
+  // Memberships
+  make('soldChart', 'bar', {
+    labels: d.sold.labels,
+    datasets: [
+      { label: 'New', data: d.sold.new, backgroundColor: '#7B2FF7', borderRadius: 4 },
+      { label: 'Renewals', data: d.sold.renewal, backgroundColor: '#00C9A7', borderRadius: 4 },
+      { label: 'Upgrades', data: d.sold.upgrade, backgroundColor: '#FF6B35', borderRadius: 4 }
+    ]
+  }, { plugins: { legend: { position: 'bottom' } },
+       scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } } });
+  doughnut('statusChart', d.status.labels, d.status.values);
+  line('signupChart', d.signups.labels, d.signups.values, '#F72585');
+
+  // Attendance
+  line('weeklyChart', d.weekly.labels, d.weekly.values, '#7B2FF7');
+  bar('weekdayChart', d.weekday.labels, d.weekday.values, '#3A86FF');
+  bar('hourChart', d.hour.labels, d.hour.values, '#FF6B35');
+</script>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Workout & Diet Plan | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{% if is_self %}My Plan{% else %}{{ target.display_name }}'s Plan{% endif %}</h3>
+      <span class="text-muted">Workout and nutrition suggestions based on goal, BMI, trend and attendance.</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2 no-print">
+      {% if is_self %}
+        <a href="{% url 'my_progress' %}" class="btn btn-fit-outline"><i class="bi bi-graph-up-arrow"></i> My progress</a>
+      {% else %}
+        <a href="{% url 'member_progress' target.pk %}" class="btn btn-fit-outline"><i class="bi bi-graph-up-arrow"></i> Progress</a>
+      {% endif %}
+      {% if plan.ready %}
+        <button type="button" onclick="window.print()" class="btn btn-fit"><i class="bi bi-printer-fill"></i> Print plan</button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if not plan.ready %}
+    <div class="fit-card no-lift text-center py-5">
+      <div class="icon-bubble grad-purple mx-auto"><i class="bi bi-lightning-charge-fill"></i></div>
+      <h5 class="fw-bold">No plan yet</h5>
+      <p class="text-muted">{{ plan.reason }}</p>
+      {% if is_self %}
+        <a href="{% url 'entry_create' %}" class="btn btn-fit">Log my measurements</a>
+      {% else %}
+        <a href="{% url 'entry_create' %}?member={{ target.pk }}" class="btn btn-fit">Log measurements</a>
+      {% endif %}
+    </div>
+
+  {% else %}
+
+  <!-- Smart flags -->
+  {% for flag in plan.flags %}
+    <div class="alert alert-{{ flag.level }}"><b>{{ flag.title }}.</b> {{ flag.text }}</div>
+  {% endfor %}
+
+  <!-- Snapshot -->
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-purple"><div class="stat-number">{{ plan.snapshot.weight }} kg</div><div class="stat-label">Weight on {{ plan.snapshot.last_date|date:"d M" }}</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-teal"><div class="stat-number">{{ plan.snapshot.bmi }}</div><div class="stat-label">BMI · {{ plan.snapshot.category }}</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-orange"><div class="stat-number" style="font-size: 1.4rem;">{{ plan.snapshot.goal_label }}</div><div class="stat-label">Goal{% if plan.snapshot.rate is not None %} · {{ plan.snapshot.rate|stringformat:"+.2f" }} kg/week{% endif %}</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card grad-pink"><div class="stat-number">{{ plan.snapshot.visits }}</div><div class="stat-label">Visits in 30 days · {{ plan.snapshot.level_label }}</div></div>
+    </div>
+  </div>
+
+  <!-- Workout -->
+  <h4 class="fw-bold mb-1"><i class="bi bi-lightning-charge-fill text-warning"></i> Weekly workout plan</h4>
+  <p class="text-muted">{{ plan.workout.intro }}</p>
+  <div class="row g-3 mb-3">
+    {% for day in plan.workout.week %}
+    <div class="col-md-6 col-lg-4">
+      <div class="fit-card no-lift {% if day.rest %}text-muted{% endif %}">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold">{{ day.day }}</span>
+          {% if day.rest %}<span class="badge-soft badge-soft-gray">Rest</span>{% else %}<span class="badge-soft badge-soft-purple">Train</span>{% endif %}
+        </div>
+        <div class="fw-semibold mb-1">{{ day.title }}</div>
+        <ul class="small ps-3 mb-0">
+          {% for item in day.exercises %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="fit-card no-lift mb-5">
+    <h6 class="fw-bold">Training tips</h6>
+    <ul class="mb-0">
+      {% for tip in plan.workout.tips %}<li>{{ tip }}</li>{% endfor %}
+    </ul>
+  </div>
+
+  <!-- Nutrition -->
+  <h4 class="fw-bold mb-3"><i class="bi bi-egg-fried text-danger"></i> Nutrition guidance</h4>
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="stat-card grad-orange">
+        {% if plan.nutrition.calories %}
+          <div class="stat-number">{{ plan.nutrition.calories.target|intcomma }} kcal</div>
+          <div class="stat-label">Daily estimate (maintenance about {{ plan.nutrition.calories.maintenance|intcomma }})</div>
+        {% else %}
+          <div class="stat-number" style="font-size: 1.3rem;">Calories</div>
+          <div class="stat-label">{{ plan.nutrition.calories_note }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card grad-teal"><div class="stat-number">{{ plan.nutrition.protein_low }}-{{ plan.nutrition.protein_high }} g</div><div class="stat-label">Protein per day</div></div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card grad-blue"><div class="stat-number">{{ plan.nutrition.water }} L</div><div class="stat-label">Water per day</div></div>
+    </div>
+  </div>
+  {% if plan.nutrition.calories.floor_applied %}
+    <div class="alert alert-info">The calorie estimate was raised to a minimum safe level.</div>
+  {% endif %}
+
+  <div class="fit-card no-lift mb-4">
+    <h6 class="fw-bold">Key principles</h6>
+    <ul class="mb-0">
+      {% for p in plan.nutrition.principles %}<li>{{ p }}</li>{% endfor %}
+    </ul>
+  </div>
+
+  <div class="fit-card no-lift mb-4">
+    <h6 class="fw-bold">Sample day</h6>
+    <p class="text-muted small">{{ plan.nutrition.portion_note }}</p>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Meal</th><th>Vegetarian</th><th>Non-vegetarian</th></tr></thead>
+        <tbody>
+          {% for meal, veg, nonveg in plan.nutrition.sample_day %}
+          <tr><td class="fw-semibold">{{ meal }}</td><td>{{ veg }}</td><td>{{ nonveg }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="small text-muted"><i class="bi bi-info-circle"></i> {{ plan.disclaimer }}</p>
+
+  {% endif %}
+</div>
+{% endblock %}

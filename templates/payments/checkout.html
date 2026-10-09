@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Checkout | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 980px;">
+
+  <div class="alert alert-warning d-flex align-items-center gap-2">
+    <i class="bi bi-shield-exclamation fs-5"></i>
+    <span><b>Demo checkout.</b> No real money is charged. Use any dummy details.</span>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Payment form -->
+    <div class="col-lg-7">
+      <div class="fit-card no-lift">
+        <h4 class="fw-bold mb-3">Choose payment method</h4>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" id="pay-form" novalidate>
+          {% csrf_token %}
+
+          <div class="method-grid mb-4">
+            <label class="method-option">
+              <input type="radio" name="method" value="card" {% if form.method.value == 'card' %}checked{% endif %}>
+              <span><i class="bi bi-credit-card-2-front-fill"></i> Card</span>
+            </label>
+            <label class="method-option">
+              <input type="radio" name="method" value="upi" {% if form.method.value == 'upi' %}checked{% endif %}>
+              <span><i class="bi bi-phone-fill"></i> UPI</span>
+            </label>
+            <label class="method-option">
+              <input type="radio" name="method" value="netbanking" {% if form.method.value == 'netbanking' %}checked{% endif %}>
+              <span><i class="bi bi-bank2"></i> Net Banking</span>
+            </label>
+          </div>
+
+          <div class="method-panel" data-method="card">
+            {% include 'includes/form_field.html' with field=form.card_number %}
+            {% include 'includes/form_field.html' with field=form.card_name %}
+            <div class="row">
+              <div class="col-6">{% include 'includes/form_field.html' with field=form.expiry %}</div>
+              <div class="col-6">{% include 'includes/form_field.html' with field=form.cvv %}</div>
+            </div>
+          </div>
+
+          <div class="method-panel" data-method="upi">
+            {% include 'includes/form_field.html' with field=form.upi_id %}
+          </div>
+
+          <div class="method-panel" data-method="netbanking">
+            {% include 'includes/form_field.html' with field=form.bank %}
+          </div>
+
+          <button type="submit" class="btn btn-fit w-100 mt-2">Pay ₹{{ payment.amount|floatformat:"-2"|intcomma }}</button>
+        </form>
+
+        <p class="small text-muted mt-3 mb-0">
+          Demo cards: any valid-looking number works, for example <code>4242 4242 4242 4242</code>.
+          The number <code>4000 0000 0000 0002</code> is always declined.
+        </p>
+      </div>
+    </div>
+
+    <!-- Order summary -->
+    <div class="col-lg-5">
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold mb-3">Order summary</h5>
+        <div class="receipt-row"><span class="text-muted">Item</span><b>{{ payment.description }}</b></div>
+        <div class="receipt-row"><span class="text-muted">Member</span><b>{{ payment.member.display_name }}</b></div>
+        <div class="receipt-row"><span class="text-muted">Due date</span><b>{{ payment.due_date|date:"d M Y" }}</b></div>
+        {% if payment.display_status == 'overdue' %}
+          <div class="receipt-row"><span class="text-muted">Status</span>{% include 'includes/payment_badge.html' with payment=payment %}</div>
+        {% endif %}
+        <div class="receipt-row fs-5"><span>Total</span><b>₹{{ payment.amount|floatformat:"-2"|intcomma }}</b></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- "Processing" overlay -->
+<div id="processing" class="processing-overlay d-none">
+  <div class="text-center">
+    <div class="spinner-ring"></div>
+    <h4 class="fw-bold">Processing payment...</h4>
+    <p class="mb-0">Please don't close this page</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var form = document.getElementById('pay-form');
+    var radios = form.querySelectorAll('input[name="method"]');
+    var panels = document.querySelectorAll('.method-panel');
+
+    // Make sure one method is always selected
+    if (!form.querySelector('input[name="method"]:checked')) { radios[0].checked = true; }
+
+    function showPanel() {
+      var chosen = form.querySelector('input[name="method"]:checked').value;
+      panels.forEach(function (p) { p.classList.toggle('active', p.dataset.method === chosen); });
+    }
+    radios.forEach(function (r) { r.addEventListener('change', showPanel); });
+    showPanel();
+
+    // Friendly formatting for card number and expiry
+    var card = document.getElementById('id_card_number');
+    card.addEventListener('input', function () {
+      var digits = card.value.replace(/\D/g, '').slice(0, 19);
+      card.value = digits.replace(/(.{4})/g, '$1 ').trim();
+    });
+    var expiry = document.getElementById('id_expiry');
+    expiry.addEventListener('input', function () {
+      var d = expiry.value.replace(/\D/g, '').slice(0, 4);
+      expiry.value = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+    });
+
+    // Fake "processing" delay, then really submit the form
+    form.addEventListener('submit', function (e) {
+      if (form.dataset.confirmed) { return; }
+      e.preventDefault();
+      document.getElementById('processing').classList.remove('d-none');
+      setTimeout(function () { form.dataset.confirmed = '1'; form.submit(); }, 2200);
+    });
+  })();
+</script>
+{% endblock %}

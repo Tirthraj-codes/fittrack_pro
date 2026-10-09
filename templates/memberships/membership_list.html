@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Memberships | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Memberships</h3>
+      <span class="text-muted">Statuses update automatically from the dates.</span>
+    </div>
+    <a href="{% url 'membership_assign' %}" class="btn btn-fit"><i class="bi bi-person-check-fill"></i> Assign plan</a>
+  </div>
+
+  <!-- Status filter chips -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'membership_list' %}" class="chip {% if not status %}chip-active{% endif %}">All <b>{{ total }}</b></a>
+    {% for chip in chips %}
+      <a href="?status={{ chip.key }}" class="chip {% if status == chip.key %}chip-active{% endif %}">{{ chip.label }} <b>{{ chip.count }}</b></a>
+    {% endfor %}
+  </div>
+
+  <div class="fit-card no-lift">
+    <form method="get" class="row g-2 mb-4">
+      <input type="hidden" name="status" value="{{ status }}">
+      <div class="col-md-8">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search member name or username">
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-fit">Search</button>
+        <a href="{% url 'membership_list' %}" class="btn btn-fit-outline">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle fit-table mb-0">
+        <thead>
+          <tr>
+            <th>Member</th><th>Plan</th><th>Starts</th><th>Ends</th><th>Days left</th><th>Status</th><th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in memberships %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ m.member.display_name }}</div>
+              <div class="text-muted small">@{{ m.member.username }}</div>
+            </td>
+            <td>
+              {{ m.plan.name }}
+              <div class="text-muted small">{{ m.get_kind_display }} · ₹{{ m.amount|floatformat:"-2"|intcomma }}</div>
+            </td>
+            <td>{{ m.start_date|date:"d M Y" }}</td>
+            <td>{{ m.end_date|date:"d M Y" }}</td>
+            <td>{% if m.status == 'active' or m.status == 'expiring' %}{{ m.days_left }}{% else %}-{% endif %}</td>
+            <td>{% include 'includes/status_badge.html' with membership=m %}</td>
+            <td class="text-end text-nowrap">
+              {% if m.can_renew %}
+                <a href="{% url 'membership_renew' m.pk %}" class="btn btn-sm btn-outline-success rounded-pill px-3">Renew</a>
+              {% endif %}
+              {% if m.can_upgrade %}
+                <a href="{% url 'membership_upgrade' m.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Upgrade</a>
+              {% endif %}
+              {% if m.can_cancel %}
+                <form method="post" action="{% url 'membership_cancel' m.pk %}" class="d-inline"
+                      onsubmit="return confirm('Cancel this membership for {{ m.member.display_name|escapejs }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Cancel</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No memberships found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="fit-card no-lift mb-4 d-flex flex-wrap align-items-center gap-3">
+    <div class="icon-bubble grad-teal mb-0"><i class="bi bi-person-heart"></i></div>
+    <div>
+      <h3 class="fw-bold mb-1">My Dashboard</h3>
+      <span class="text-muted">Welcome, {{ user.display_name }} 🔥</span>
+    </div>
+  </div>
+  {% if unpaid_count %}
+    <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span><i class="bi bi-credit-card-2-front-fill"></i> You have <b>{{ unpaid_count }}</b> payment{{ unpaid_count|pluralize }} waiting (₹{{ unpaid_total|floatformat:"-2" }}).</span>
+      <a href="{% url 'my_payments' %}" class="btn btn-fit btn-sm">Pay now</a>
+    </div>
+  {% endif %}
+  {% if membership %}
+    {% if membership.status == 'expiring' %}
+      <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        Your membership expires in <b>{{ membership.days_left }} day{{ membership.days_left|pluralize }}</b>. Please renew at the front desk.
+      </div>
+    {% elif membership.status == 'expired' %}
+      <div class="alert alert-danger">
+        <i class="bi bi-x-circle-fill"></i>
+        Your membership expired on {{ membership.end_date|date:"d M Y" }}. Please renew at the front desk.
+      </div>
+    {% endif %}
+
+    <div class="fit-card no-lift">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+          <h5 class="fw-bold mb-0">{{ membership.plan.name }}</h5>
+          <span class="text-muted small">{{ membership.start_date|date:"d M Y" }} to {{ membership.end_date|date:"d M Y" }}</span>
+        </div>
+        {% include 'includes/status_badge.html' with membership=membership %}
+      </div>
+      {% if membership.status == 'active' or membership.status == 'expiring' %}
+        <div class="progress progress-fit mb-2"><div class="progress-bar" style="width: {{ membership.progress_percent }}%"></div></div>
+        <div class="small text-muted mb-3"><b>{{ membership.days_left }}</b> day{{ membership.days_left|pluralize }} left</div>
+      {% endif %}
+      <a href="{% url 'my_membership' %}" class="btn btn-fit-outline btn-sm">View details &amp; history</a>
+    </div>
+  {% else %}
+    <div class="fit-card no-lift text-center text-muted">You don't have a membership yet. Ask the front desk to assign a plan.</div>
+  {% endif %}
+      <div class="fit-card no-lift mt-4">
+    <h5 class="fw-bold mb-2"><i class="bi bi-qr-code"></i> Attendance</h5>
+    <p class="text-muted">Show your QR code at the front desk to check in and out.</p>
+    <a href="{% url 'my_attendance' %}" class="btn btn-fit-outline btn-sm">Show my QR &amp; history</a>
+  </div>
+    <div class="fit-card no-lift mt-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-person-badge-fill"></i> My training</h5>
+    {% if trainer %}
+      <p class="mb-2">Your trainer: <b>{{ trainer.display_name }}</b></p>
+    {% else %}
+      <p class="text-muted mb-2">No trainer assigned yet. Ask the front desk.</p>
+    {% endif %}
+    {% if next_session %}
+      <p class="mb-3">Next session: <b>{{ next_session.date|date:"D, d M" }}</b>, {{ next_session.start_time|time:"h:i A" }} with {{ next_session.trainer.display_name }}</p>
+    {% endif %}
+    <a href="{% url 'schedule_week' %}" class="btn btn-fit-outline btn-sm">View my schedule</a>
+  </div>
+    <div class="fit-card no-lift mt-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow"></i> My progress</h5>
+    {% if latest_entry %}
+      <p class="mb-2">
+        Latest: <b>{{ latest_entry.weight_kg }} kg</b> on {{ latest_entry.date|date:"d M" }} ·
+        BMI <span class="badge-soft {{ latest_entry.bmi_badge }}">{{ latest_entry.bmi }} · {{ latest_entry.bmi_category }}</span>
+      </p>
+      {% if goal %}<p class="mb-3 text-muted">Goal: {{ goal.get_goal_type_display }}{% if goal.target_weight_kg %}, target {{ goal.target_weight_kg }} kg{% endif %}</p>{% endif %}
+    {% else %}
+      <p class="text-muted">Log your first measurements to start tracking your progress.</p>
+    {% endif %}
+    <a href="{% url 'my_progress' %}" class="btn btn-fit-outline btn-sm">Open my progress</a>
+    <a href="{% url 'my_plan' %}" class="btn btn-fit btn-sm ms-1">My plan</a>
+  </div>
+  <p class="text-muted mt-4">Attendance, payments and progress charts will appear here as we build them.</p>
+</div>
+{% endblock %}

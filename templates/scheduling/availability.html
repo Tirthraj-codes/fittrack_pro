@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Trainer Availability | FitTrack Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Availability</h3>
+      <span class="text-muted">Weekly hours for {{ trainer.display_name }}. Sessions can only be booked inside these hours.</span>
+    </div>
+    {% if trainers %}
+    <form method="get" class="d-flex gap-2">
+      <select name="trainer" class="form-select">
+        {% for t in trainers %}
+          <option value="{{ t.pk }}" {% if t.pk == trainer.pk %}selected{% endif %}>{{ t.display_name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-fit">Show</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="row g-4">
+
+    <div class="col-lg-5">
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold mb-3">Add available hours</h5>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <label class="form-label fw-semibold">Days</label>
+          <div class="d-flex flex-wrap gap-2 mb-1">
+            {% for value, label in form.weekdays.field.choices %}
+              <div>
+                <input type="checkbox" class="btn-check" id="day-{{ value }}" name="weekdays" value="{{ value }}"
+                       {% if value in form.weekdays.value %}checked{% endif %}>
+                <label class="day-pill" for="day-{{ value }}">{{ label|slice:":3" }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          {% for error in form.weekdays.errors %}
+            <div class="text-danger small mb-2"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+          {% endfor %}
+
+          <div class="row mt-3">
+            <div class="col-6">{% include 'includes/form_field.html' with field=form.start_time %}</div>
+            <div class="col-6">{% include 'includes/form_field.html' with field=form.end_time %}</div>
+          </div>
+          <button type="submit" class="btn btn-fit w-100">Add hours</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="fit-card no-lift">
+        <h5 class="fw-bold mb-3">Current weekly hours</h5>
+        {% for day in by_day %}
+        <div class="d-flex align-items-start gap-3 py-2 border-bottom">
+          <div class="fw-semibold" style="width: 100px;">{{ day.name }}</div>
+          <div class="d-flex flex-wrap gap-2">
+            {% for s in day.slots %}
+              <form method="post" action="{% url 'availability_delete' s.pk %}" class="d-inline"
+                    onsubmit="return confirm('Remove this time slot?');">
+                {% csrf_token %}
+                <span class="badge-soft badge-soft-teal">{{ s.start_time|time:"h:i A" }} - {{ s.end_time|time:"h:i A" }}</span>
+                <button type="submit" class="btn btn-sm text-danger p-0 ms-1" title="Remove"><i class="bi bi-x-circle-fill"></i></button>
+              </form>
+            {% empty %}
+              <span class="text-muted small">Not available</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

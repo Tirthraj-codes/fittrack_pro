@@ -1,0 +1,3 @@
+<span class="badge-soft {% if session.status == 'completed' %}badge-soft-success{% elif session.status == 'no_show' %}badge-soft-orange{% elif session.status == 'cancelled' %}badge-soft-gray{% else %}badge-soft-purple{% endif %}">
+  {{ session.get_status_display }}
+</span>
